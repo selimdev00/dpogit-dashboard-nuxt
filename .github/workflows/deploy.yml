@@ -1,0 +1,39 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    environment: production
+
+    steps:
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+
+          echo "🚀 Starting deployment..."
+
+          # Navigate to project directory
+          cd ~/mini-app-landing-nuxt
+
+          # Checkout master branch and pull latest changes
+          git checkout master
+          git pull origin master
+
+          # Deploy with Docker Compose
+          docker-compose up -d --build
+
+          echo "✅ Deployment completed successfully!"
+        EOF
