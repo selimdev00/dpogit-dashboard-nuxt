@@ -1,4 +1,4 @@
-export type FormatType = 'currency' | 'number' | 'percentage' | 'text'
+export type FormatType = 'currency' | 'number' | 'percentage' | 'text' | 'count'
 
 export function formatValue(
   value: string | number,
@@ -19,6 +19,8 @@ export function formatValue(
       return new Intl.NumberFormat('ru-RU').format(value)
     case 'percentage':
       return `${value}%`
+    case 'count':
+      return `${new Intl.NumberFormat('ru-RU').format(value)} шт.`
     default:
       return value.toString()
   }

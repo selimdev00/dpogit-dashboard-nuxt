@@ -29,61 +29,113 @@
         </button>
       </div>
 
-      <!-- Date Grid -->
-      <div class="mb-4 flex gap-4">
-        <!-- Years Column -->
-        <div class="flex flex-1 flex-col gap-1">
-          <button
-            v-for="year in years"
-            :key="year"
-            @click="selectYear(year)"
-            :class="[
+      <div class="flex gap-4">
+        <!-- Date Grid -->
+        <div class="mb-4 flex gap-4 flex-1">
+          <!-- Years Column -->
+          <div class="flex flex-1 flex-col gap-1">
+            <button
+                v-for="year in years"
+                :key="year"
+                @click="selectYear(year)"
+                :class="[
               'rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
               selectedYear === year ? 'bg-primary text-primary-foreground' : '',
             ]"
-          >
-            {{ year }}
-          </button>
-        </div>
+            >
+              {{ year }}
+            </button>
+          </div>
 
-        <!-- Months Column -->
-        <div
-          v-if="selectedPeriod === 'month' || selectedPeriod === 'quarter'"
-          class="flex flex-1 flex-col gap-1"
-        >
-          <button
-            v-for="month in months"
-            :key="month.value"
-            @click="selectMonth(month.value)"
-            :class="[
+          <!-- Months Column -->
+          <div
+              v-if="selectedPeriod === 'month' || selectedPeriod === 'quarter'"
+              class="flex flex-1 flex-col gap-1"
+          >
+            <button
+                v-for="month in months"
+                :key="month.value"
+                @click="selectMonth(month.value)"
+                :class="[
               'rounded-md  px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
               selectedMonth === month.value
                 ? 'bg-primary text-primary-foreground'
                 : '',
             ]"
-          >
-            {{ month.label }}
-          </button>
-        </div>
+            >
+              {{ month.label }}
+            </button>
+          </div>
 
-        <!-- Quarters Column -->
-        <div
-          v-if="selectedPeriod === 'quarter'"
-          class="flex flex-1 flex-col gap-1"
-        >
-          <button
-            v-for="quarter in quarters"
-            :key="quarter.value"
-            @click="selectQuarter(quarter.value)"
-            :class="[
+          <!-- Quarters Column -->
+          <div
+              v-if="selectedPeriod === 'quarter'"
+              class="flex flex-1 flex-col gap-1"
+          >
+            <button
+                v-for="quarter in quarters"
+                :key="quarter.value"
+                @click="selectQuarter(quarter.value)"
+                :class="[
               'rounded-md  px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
               selectedQuarter === quarter.value
                 ? ' bg-primary text-primary-foreground'
                 : '',
             ]"
-          >
-            {{ quarter.label }}
-          </button>
+            >
+              {{ quarter.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Period Calendar -->
+        <div v-if="selectedPeriod === 'period'" class="mb-4">
+          <!-- Month Navigation -->
+          <div class="mb-4 flex items-center justify-between">
+            <button @click="previousMonth" class="rounded-md p-1 hover:bg-accent">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <div class="flex gap-2">
+              <span class="text-sm font-medium">{{ getMonthName(currentMonth) }} {{ currentYear }}</span>
+              <span v-if="currentMonth !== displayMonth || currentYear !== displayYear"
+                    class="text-sm text-muted-foreground">
+              — {{ getMonthName(displayMonth) }} {{ displayYear }}
+            </span>
+            </div>
+            <button @click="nextMonth" class="rounded-md p-1 hover:bg-accent">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Calendar Grid -->
+          <div class="grid grid-cols-7 gap-1 text-center text-xs">
+            <!-- Week headers -->
+            <div v-for="day in weekDays" :key="day" class="p-2 text-muted-foreground font-medium">{{ day }}</div>
+
+            <!-- Calendar days -->
+            <button
+                v-for="date in calendarDays"
+                :key="`${date.year}-${date.month}-${date.day}`"
+                @click="selectDate(date)"
+                :disabled="isDateDisabled(date)"
+                :class="[
+              'p-2 rounded-md text-sm transition-colors',
+              !date.isCurrentMonth && 'text-muted-foreground',
+              isDateDisabled(date)
+                ? 'text-muted-foreground/50 cursor-not-allowed'
+                : 'hover:bg-accent',
+              isDateInRange(date) && !isDateDisabled(date) && 'bg-primary/20 text-primary',
+              isDateSelected(date, 'start') && !isDateDisabled(date) && 'bg-primary text-primary-foreground',
+              isDateSelected(date, 'end') && !isDateDisabled(date) && 'bg-primary text-primary-foreground'
+            ]"
+            >
+              {{ date.day }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -106,7 +158,7 @@ import { Calendar } from "lucide-vue-next";
 interface DatePickerEmits {
   (
     e: "update:modelValue",
-    value: { period: string; year: number; month?: number; quarter?: number },
+    value: { period: string; year: number; month?: number; quarter?: number; startDate?: string; endDate?: string; dateFrom?: string; dateTo?: string },
   ): void;
 }
 
@@ -116,6 +168,10 @@ interface DatePickerProps {
     year: number;
     month?: number;
     quarter?: number;
+    startDate?: string;
+    endDate?: string;
+    dateFrom?: string;
+    dateTo?: string;
   };
 }
 
@@ -130,6 +186,14 @@ const selectedPeriod = ref("month");
 const selectedYear = ref(2025);
 const selectedMonth = ref(9); // September
 const selectedQuarter = ref(1);
+
+// Period calendar state
+const currentMonth = ref(8); // September (0-indexed)
+const currentYear = ref(2025);
+const displayMonth = ref(9); // October (0-indexed)
+const displayYear = ref(2025);
+const startDate = ref<Date | null>(null);
+const endDate = ref<Date | null>(null);
 
 // Data
 const periods = [
@@ -155,6 +219,13 @@ const quarters = [
   { value: 4, label: "Q4" },
 ];
 
+const weekDays = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
+
+const monthNames = [
+  "января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря"
+];
+
 // Computed
 const formatSelectedDate = computed(() => {
   if (selectedPeriod.value === "month") {
@@ -165,8 +236,39 @@ const formatSelectedDate = computed(() => {
     return `Q${selectedQuarter.value} ${selectedYear.value}`;
   } else if (selectedPeriod.value === "year") {
     return `${selectedYear.value}`;
+  } else if (selectedPeriod.value === "period") {
+    if (startDate.value && endDate.value) {
+      const start = new Date(startDate.value);
+      const end = new Date(endDate.value);
+      return `${start.getDate()}.${String(start.getMonth() + 1).padStart(2, '0')}.${start.getFullYear()} — ${end.getDate()}.${String(end.getMonth() + 1).padStart(2, '0')}.${end.getFullYear()}`;
+    }
+    return "Выберите период";
   }
   return "Период";
+});
+
+const calendarDays = computed(() => {
+  const days = [];
+  const firstDay = new Date(currentYear.value, currentMonth.value, 1);
+
+  // Add days from previous month
+  const startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - ((firstDay.getDay() + 6) % 7));
+
+  // Add days until we have 6 weeks (42 days)
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+
+    days.push({
+      day: date.getDate(),
+      month: date.getMonth(),
+      year: date.getFullYear(),
+      isCurrentMonth: date.getMonth() === currentMonth.value
+    });
+  }
+
+  return days;
 });
 
 // Methods
@@ -190,13 +292,122 @@ const selectQuarter = (quarter: number) => {
   selectedQuarter.value = quarter;
 };
 
+const getMonthName = (monthIndex: number) => {
+  return monthNames[monthIndex];
+};
+
+const previousMonth = () => {
+  if (currentMonth.value === 0) {
+    currentMonth.value = 11;
+    currentYear.value--;
+  } else {
+    currentMonth.value--;
+  }
+};
+
+const nextMonth = () => {
+  if (currentMonth.value === 11) {
+    currentMonth.value = 0;
+    currentYear.value++;
+  } else {
+    currentMonth.value++;
+  }
+};
+
+const selectDate = (date: { day: number; month: number; year: number }) => {
+  // Don't allow selection of disabled dates
+  if (isDateDisabled(date)) return;
+
+  const selected = new Date(date.year, date.month, date.day);
+
+  if (!startDate.value || (startDate.value && endDate.value)) {
+    // Start new selection
+    startDate.value = selected;
+    endDate.value = null;
+  } else if (!endDate.value) {
+    // Set end date
+    if (selected >= startDate.value) {
+      endDate.value = selected;
+    } else {
+      endDate.value = startDate.value;
+      startDate.value = selected;
+    }
+  }
+};
+
+const isDateSelected = (date: { day: number; month: number; year: number }, type: 'start' | 'end') => {
+  const dateObj = new Date(date.year, date.month, date.day);
+  if (type === 'start') {
+    return startDate.value && dateObj.getTime() === startDate.value.getTime();
+  }
+  return endDate.value && dateObj.getTime() === endDate.value.getTime();
+};
+
+const isDateInRange = (date: { day: number; month: number; year: number }) => {
+  if (!startDate.value || !endDate.value) return false;
+  const dateObj = new Date(date.year, date.month, date.day);
+  return dateObj > startDate.value && dateObj < endDate.value;
+};
+
+const isDateDisabled = (date: { day: number; month: number; year: number }) => {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // End of today
+  const dateObj = new Date(date.year, date.month, date.day);
+  return dateObj > today;
+};
+
+const getDateRange = () => {
+  let dateFrom: Date;
+  let dateTo: Date;
+
+  if (selectedPeriod.value === "year") {
+    // Year: first day to last day of the year
+    dateFrom = new Date(selectedYear.value, 0, 1); // January 1st
+    dateTo = new Date(selectedYear.value, 11, 31); // December 31st
+  } else if (selectedPeriod.value === "month") {
+    // Month: first day to last day of the month
+    const month = selectedMonth.value - 1; // Convert from 1-based to 0-based
+    dateFrom = new Date(selectedYear.value, month, 1);
+    dateTo = new Date(selectedYear.value, month + 1, 0); // Last day of the month
+  } else if (selectedPeriod.value === "quarter") {
+    // Quarter: first day to last day of the quarter
+    const quarter = selectedQuarter.value;
+    const startMonth = (quarter - 1) * 3; // Q1=0, Q2=3, Q3=6, Q4=9
+    const endMonth = startMonth + 2;
+
+    dateFrom = new Date(selectedYear.value, startMonth, 1);
+    dateTo = new Date(selectedYear.value, endMonth + 1, 0); // Last day of quarter's last month
+  } else if (selectedPeriod.value === "period" && startDate.value && endDate.value) {
+    // Period: use selected start and end dates
+    dateFrom = startDate.value;
+    dateTo = endDate.value;
+  } else {
+    // Default fallback
+    dateFrom = new Date();
+    dateTo = new Date();
+  }
+
+  return {
+    dateFrom: dateFrom.toISOString().split('T')[0], // YYYY-MM-DD format
+    dateTo: dateTo.toISOString().split('T')[0]
+  };
+};
+
 const confirmSelection = () => {
+  const { dateFrom, dateTo } = getDateRange();
+
   const value = {
     period: selectedPeriod.value,
     year: selectedYear.value,
+    dateFrom,
+    dateTo,
     ...(selectedPeriod.value === "month" && { month: selectedMonth.value }),
     ...(selectedPeriod.value === "quarter" && {
       quarter: selectedQuarter.value,
+    }),
+    ...(selectedPeriod.value === "period" && {
+      startDate: startDate.value?.toISOString(),
+      endDate: endDate.value?.toISOString(),
     }),
   };
 
@@ -224,6 +435,10 @@ onMounted(() => {
     if (props.modelValue.month) selectedMonth.value = props.modelValue.month;
     if (props.modelValue.quarter)
       selectedQuarter.value = props.modelValue.quarter;
+    if (props.modelValue.startDate)
+      startDate.value = new Date(props.modelValue.startDate);
+    if (props.modelValue.endDate)
+      endDate.value = new Date(props.modelValue.endDate);
   }
 });
 

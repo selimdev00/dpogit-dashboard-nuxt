@@ -26,85 +26,76 @@
         </div>
       </div>
 
-      <ClientOnly>
-        <!-- Loading State -->
-        <div v-if="isLoading" class="flex items-center justify-center py-12">
-          <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-r-transparent"></div>
-          <span class="ml-3 text-muted-foreground">Загрузка...</span>
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex items-center justify-center py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-r-transparent"></div>
+        <span class="ml-3 text-muted-foreground">Загрузка...</span>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
+        <h3 class="mb-2 font-medium text-destructive">Ошибка загрузки</h3>
+        <p class="text-sm text-destructive/80">{{ error.message }}</p>
+      </div>
+
+      <!-- Department Content -->
+      <div v-else-if="selectedDepartment" class="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <!-- Table Header -->
+        <div class="grid grid-cols-6 gap-4 border-b bg-muted/50 p-4 text-sm font-medium text-muted-foreground">
+          <div class="col-span-2">Сотрудник</div>
+          <div class="text-center">Лиды, шт</div>
+          <div class="text-center">Продажи, шт</div>
+          <div class="text-center">Сумма договоров, руб</div>
+          <div class="text-center">Маржа, руб</div>
+          <div class="text-center">КЗВ, шт</div>
         </div>
 
-        <!-- Error State -->
-        <div v-else-if="error" class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-          <h3 class="mb-2 font-medium text-destructive">Ошибка загрузки</h3>
-          <p class="text-sm text-destructive/80">{{ error.message }}</p>
-        </div>
-
-        <!-- Department Content -->
-        <div v-else-if="selectedDepartment" class="rounded-lg border bg-card text-card-foreground shadow-sm">
-          <!-- Table Header -->
-          <div class="grid grid-cols-6 gap-4 border-b bg-muted/50 p-4 text-sm font-medium text-muted-foreground">
-            <div class="col-span-2">Сотрудник</div>
-            <div class="text-center">Лиды, шт</div>
-            <div class="text-center">Продажи, шт</div>
-            <div class="text-center">Сумма договоров, руб</div>
-            <div class="text-center">Маржа, руб</div>
-            <div class="text-center">КЗВ, шт</div>
-          </div>
-
-          <!-- Employee Rows -->
-          <div class="divide-y">
-            <div
-              v-for="employee in selectedDepartment.employees"
-              :key="employee.id"
-              class="grid grid-cols-6 gap-4 p-4 transition-colors hover:bg-muted/50"
-            >
-              <!-- Employee Info -->
-              <div class="col-span-2 flex items-center gap-3">
-                <div class="relative h-10 w-10 flex-shrink-0">
-                  <img
-                    v-if="employee.photo"
-                    :src="employee.photo"
-                    :alt="employee.name"
-                    class="h-full w-full rounded-full object-cover"
-                  />
-                  <div
-                    v-else
-                    class="flex h-full w-full items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
-                  >
-                    {{ getInitials(employee.name) }}
-                  </div>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-foreground">{{ employee.name }}</p>
-                  <p v-if="employee.position" class="truncate text-xs text-muted-foreground">{{ employee.position }}</p>
+        <!-- Employee Rows -->
+        <div class="divide-y">
+          <div
+            v-for="employee in selectedDepartment.employees"
+            :key="employee.id"
+            class="grid grid-cols-6 gap-4 p-4 transition-colors hover:bg-muted/50"
+          >
+            <!-- Employee Info -->
+            <div class="col-span-2 flex items-center gap-3">
+              <div class="relative h-10 w-10 flex-shrink-0">
+                <img
+                  v-if="employee.photo"
+                  :src="employee.photo"
+                  :alt="employee.name"
+                  class="h-full w-full rounded-full object-cover"
+                />
+                <div
+                  v-else
+                  class="flex h-full w-full items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                >
+                  {{ getInitials(employee.name) }}
                 </div>
               </div>
-
-              <!-- Metrics -->
-              <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-              <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-              <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-              <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-              <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-foreground">{{ employee.name }}</p>
+                <p v-if="employee.position" class="truncate text-xs text-muted-foreground">{{ employee.position }}</p>
+              </div>
             </div>
+
+            <!-- Metrics -->
+            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
+            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
+            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
+            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
+            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
           </div>
         </div>
+      </div>
 
-        <!-- No Selection State -->
-        <div v-else class="flex items-center justify-center py-12">
-          <div class="text-center">
-            <h3 class="mb-2 text-lg font-medium text-foreground">Выберите отдел</h3>
-            <p class="text-muted-foreground">Выберите отдел из списка для просмотра сотрудников</p>
-          </div>
+      <!-- No Selection State -->
+      <div v-else class="flex items-center justify-center py-12">
+        <div class="text-center">
+          <h3 class="mb-2 text-lg font-medium text-foreground">Выберите отдел</h3>
+          <p class="text-muted-foreground">Выберите отдел из списка для просмотра сотрудников</p>
         </div>
-
-        <!-- Fallback -->
-        <template #fallback>
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div v-for="i in 6" :key="i" class="h-32 animate-pulse rounded-lg bg-card"></div>
-          </div>
-        </template>
-      </ClientOnly>
+      </div>
     </div>
   </div>
 </template>
@@ -119,9 +110,7 @@ definePageMeta({
 
 const selectedDepartmentId = ref<number | ''>('')
 
-const { data, isLoading, error } = useDepartmentsQuery({
-  enabled: process.client
-})
+const { data, isLoading, error } = useDepartmentsQuery()
 
 const selectedDepartment = computed<Department | null>(() => {
   if (!data.value || !selectedDepartmentId.value) return null

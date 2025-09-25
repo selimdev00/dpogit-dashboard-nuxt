@@ -9,6 +9,7 @@
 
         <!-- DatePicker -->
         <DatePicker v-model="selectedDateRange" @update:modelValue="handleDateChange" />
+
       </div>
 
       <!-- Navigation -->
@@ -42,6 +43,8 @@ interface DateRange {
   year: number
   month?: number
   quarter?: number
+  dateFrom?: string
+  dateTo?: string
 }
 
 const selectedDateRange = ref<DateRange>({

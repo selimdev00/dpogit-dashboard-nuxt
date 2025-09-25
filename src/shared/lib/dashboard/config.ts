@@ -5,7 +5,7 @@ export interface DashboardMetricConfig {
   title: string;
   apiKey: string;
   apiParams?: ApiQueryParams;
-  formatType?: "currency" | "number" | "percentage" | "text";
+  formatType?: "currency" | "number" | "percentage" | "text" | "count";
   description?: string;
   dataProperty: string; // Property name in the API response (e.g., 'invoices')
   valueProperty?:
@@ -47,7 +47,7 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
       dateTo: "2025-09-30",
       by: "currency",
     },
-    formatType: "currency",
+    formatType: "count",
     dataProperty: "calls",
     valueProperty: "count",
     progressProperty: "assumptionPercent",
