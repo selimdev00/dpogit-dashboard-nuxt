@@ -1,13 +1,16 @@
+import { type FormatType } from '@/shared/lib/formatters'
+
 export interface DashboardMetric {
   id: string
   title: string
   value: string | number
-  subtitle?: string
+  plan?: string | number
   changeText?: string
+  changePercent?: number
   changeType?: 'increase' | 'decrease' | 'neutral'
   description?: string
   progressValue?: number
-  formatType?: 'currency' | 'number' | 'percentage' | 'text'
+  formatType?: FormatType
 }
 
 export interface DashboardData {

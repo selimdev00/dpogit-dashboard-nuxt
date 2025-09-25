@@ -21,6 +21,12 @@ export default defineNuxtConfig({
 
   modules: ["shadcn-nuxt", "@pinia/nuxt"],
 
+  runtimeConfig: {
+    public: {
+      apiHost: process.env.API_HOST
+    }
+  },
+
   shadcn: {
     componentDir: "./shared/ui",
   },
