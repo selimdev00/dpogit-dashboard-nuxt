@@ -1,2 +1,5 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Disallow: /
+
+# This is a private dashboard application
+# Access is restricted to authorized users only

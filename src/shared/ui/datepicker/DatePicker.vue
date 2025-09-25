@@ -1,331 +1,233 @@
 <template>
-  <div class="datepicker" ref="datepickerRef">
+  <div class="relative" ref="datepickerRef">
     <button
       @click="toggleDropdown"
-      class="datepicker-trigger"
+      class="inline-flex items-center gap-2 rounded-md bg-card text-muted-foreground px-3 py-2 text-sm ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
     >
-      <CalendarIcon class="datepicker-icon" />
+      <Calendar class="h-4 w-4" />
       {{ formatSelectedDate }}
     </button>
 
     <div
       v-if="isOpen"
-      class="datepicker-dropdown"
+      class="absolute left-0 top-full z-50 mt-1 min-w-[400px] rounded-md bg-popover p-4 text-popover-foreground shadow-md"
     >
-      <div class="datepicker-content">
-        <!-- Period Selector -->
-        <div class="period-selector">
+      <!-- Period Selector -->
+      <div class="mb-4 flex rounded-lg bg-card p-1">
+        <button
+          v-for="period in periods"
+          :key="period.value"
+          @click="selectPeriod(period.value)"
+          :class="[
+            'flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            selectedPeriod === period.value
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
+          ]"
+        >
+          {{ period.label }}
+        </button>
+      </div>
+
+      <!-- Date Grid -->
+      <div class="mb-4 flex gap-4">
+        <!-- Years Column -->
+        <div class="flex flex-1 flex-col gap-1">
           <button
-            v-for="period in periods"
-            :key="period.value"
-            @click="selectPeriod(period.value)"
-            :class="['period-button', { active: selectedPeriod === period.value }]"
+            v-for="year in years"
+            :key="year"
+            @click="selectYear(year)"
+            :class="[
+              'rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+              selectedYear === year ? 'bg-primary text-primary-foreground' : '',
+            ]"
           >
-            {{ period.label }}
+            {{ year }}
           </button>
         </div>
 
-        <!-- Date Grid -->
-        <div class="date-grid">
-          <!-- Years Column -->
-          <div class="date-column">
-            <button
-              v-for="year in years"
-              :key="year"
-              @click="selectYear(year)"
-              :class="['date-button', { active: selectedYear === year }]"
-            >
-              {{ year }}
-            </button>
-          </div>
-
-          <!-- Months Column -->
-          <div class="date-column" v-if="selectedPeriod === 'month' || selectedPeriod === 'quarter'">
-            <button
-              v-for="month in months"
-              :key="month.value"
-              @click="selectMonth(month.value)"
-              :class="['date-button', { active: selectedMonth === month.value }]"
-            >
-              {{ month.label }}
-            </button>
-          </div>
-
-          <!-- Quarters Column -->
-          <div class="date-column" v-if="selectedPeriod === 'quarter'">
-            <button
-              v-for="quarter in quarters"
-              :key="quarter.value"
-              @click="selectQuarter(quarter.value)"
-              :class="['date-button', { active: selectedQuarter === quarter.value }]"
-            >
-              {{ quarter.label }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Confirm Button -->
-        <div class="datepicker-footer">
-          <button @click="confirmSelection" class="confirm-button">
-            Подтвердить
+        <!-- Months Column -->
+        <div
+          v-if="selectedPeriod === 'month' || selectedPeriod === 'quarter'"
+          class="flex flex-1 flex-col gap-1"
+        >
+          <button
+            v-for="month in months"
+            :key="month.value"
+            @click="selectMonth(month.value)"
+            :class="[
+              'rounded-md  px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+              selectedMonth === month.value
+                ? 'bg-primary text-primary-foreground'
+                : '',
+            ]"
+          >
+            {{ month.label }}
           </button>
         </div>
+
+        <!-- Quarters Column -->
+        <div
+          v-if="selectedPeriod === 'quarter'"
+          class="flex flex-1 flex-col gap-1"
+        >
+          <button
+            v-for="quarter in quarters"
+            :key="quarter.value"
+            @click="selectQuarter(quarter.value)"
+            :class="[
+              'rounded-md  px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+              selectedQuarter === quarter.value
+                ? ' bg-primary text-primary-foreground'
+                : '',
+            ]"
+          >
+            {{ quarter.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirm Button -->
+      <div class="flex justify-end">
+        <button
+          @click="confirmSelection"
+          class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        >
+          Подтвердить
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Calendar } from "lucide-vue-next";
+
 interface DatePickerEmits {
-  (e: 'update:modelValue', value: { period: string; year: number; month?: number; quarter?: number }): void
+  (
+    e: "update:modelValue",
+    value: { period: string; year: number; month?: number; quarter?: number },
+  ): void;
 }
 
 interface DatePickerProps {
   modelValue?: {
-    period: string
-    year: number
-    month?: number
-    quarter?: number
-  }
+    period: string;
+    year: number;
+    month?: number;
+    quarter?: number;
+  };
 }
 
-const props = defineProps<DatePickerProps>()
-const emit = defineEmits<DatePickerEmits>()
+const props = defineProps<DatePickerProps>();
+const emit = defineEmits<DatePickerEmits>();
 
-const datepickerRef = ref<HTMLElement>()
-const isOpen = ref(false)
+const datepickerRef = ref<HTMLElement>();
+const isOpen = ref(false);
 
 // State
-const selectedPeriod = ref('month')
-const selectedYear = ref(2025)
-const selectedMonth = ref(9) // September
-const selectedQuarter = ref(1)
+const selectedPeriod = ref("month");
+const selectedYear = ref(2025);
+const selectedMonth = ref(9); // September
+const selectedQuarter = ref(1);
 
 // Data
 const periods = [
-  { value: 'month', label: 'Месяц' },
-  { value: 'quarter', label: 'Квартал' },
-  { value: 'year', label: 'Год' },
-  { value: 'period', label: 'Период' }
-]
+  { value: "month", label: "Месяц" },
+  { value: "quarter", label: "Квартал" },
+  { value: "year", label: "Год" },
+  { value: "period", label: "Период" },
+];
 
-const years = Array.from({ length: 8 }, (_, i) => 2025 + i)
+const years = Array.from({ length: 8 }, (_, i) => 2025 + i);
 
 const months = [
-  { value: 9, label: 'сентябрь' },
-  { value: 10, label: 'октябрь' },
-  { value: 11, label: 'ноябрь' },
-  { value: 12, label: 'декабрь' }
-]
+  { value: 9, label: "сентябрь" },
+  { value: 10, label: "октябрь" },
+  { value: 11, label: "ноябрь" },
+  { value: 12, label: "декабрь" },
+];
 
 const quarters = [
-  { value: 1, label: 'Q1' },
-  { value: 2, label: 'Q2' },
-  { value: 3, label: 'Q3' },
-  { value: 4, label: 'Q4' }
-]
+  { value: 1, label: "Q1" },
+  { value: 2, label: "Q2" },
+  { value: 3, label: "Q3" },
+  { value: 4, label: "Q4" },
+];
 
 // Computed
 const formatSelectedDate = computed(() => {
-  if (selectedPeriod.value === 'month') {
-    const monthName = months.find(m => m.value === selectedMonth.value)?.label || 'сентябрь'
-    return `${monthName} ${selectedYear.value}`
-  } else if (selectedPeriod.value === 'quarter') {
-    return `Q${selectedQuarter.value} ${selectedYear.value}`
-  } else if (selectedPeriod.value === 'year') {
-    return `${selectedYear.value}`
+  if (selectedPeriod.value === "month") {
+    const monthName =
+      months.find((m) => m.value === selectedMonth.value)?.label || "сентябрь";
+    return `${monthName} ${selectedYear.value}`;
+  } else if (selectedPeriod.value === "quarter") {
+    return `Q${selectedQuarter.value} ${selectedYear.value}`;
+  } else if (selectedPeriod.value === "year") {
+    return `${selectedYear.value}`;
   }
-  return 'Период'
-})
+  return "Период";
+});
 
 // Methods
 const toggleDropdown = () => {
-  isOpen.value = !isOpen.value
-}
+  isOpen.value = !isOpen.value;
+};
 
 const selectPeriod = (period: string) => {
-  selectedPeriod.value = period
-}
+  selectedPeriod.value = period;
+};
 
 const selectYear = (year: number) => {
-  selectedYear.value = year
-}
+  selectedYear.value = year;
+};
 
 const selectMonth = (month: number) => {
-  selectedMonth.value = month
-}
+  selectedMonth.value = month;
+};
 
 const selectQuarter = (quarter: number) => {
-  selectedQuarter.value = quarter
-}
+  selectedQuarter.value = quarter;
+};
 
 const confirmSelection = () => {
   const value = {
     period: selectedPeriod.value,
     year: selectedYear.value,
-    ...(selectedPeriod.value === 'month' && { month: selectedMonth.value }),
-    ...(selectedPeriod.value === 'quarter' && { quarter: selectedQuarter.value })
-  }
+    ...(selectedPeriod.value === "month" && { month: selectedMonth.value }),
+    ...(selectedPeriod.value === "quarter" && {
+      quarter: selectedQuarter.value,
+    }),
+  };
 
-  emit('update:modelValue', value)
-  isOpen.value = false
-}
+  emit("update:modelValue", value);
+  isOpen.value = false;
+};
 
 // Close dropdown when clicking outside
 const handleClickOutside = (event: Event) => {
-  if (datepickerRef.value && !datepickerRef.value.contains(event.target as Node)) {
-    isOpen.value = false
+  if (
+    datepickerRef.value &&
+    !datepickerRef.value.contains(event.target as Node)
+  ) {
+    isOpen.value = false;
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
+  document.addEventListener("click", handleClickOutside);
 
   // Initialize from props
   if (props.modelValue) {
-    selectedPeriod.value = props.modelValue.period
-    selectedYear.value = props.modelValue.year
-    if (props.modelValue.month) selectedMonth.value = props.modelValue.month
-    if (props.modelValue.quarter) selectedQuarter.value = props.modelValue.quarter
+    selectedPeriod.value = props.modelValue.period;
+    selectedYear.value = props.modelValue.year;
+    if (props.modelValue.month) selectedMonth.value = props.modelValue.month;
+    if (props.modelValue.quarter)
+      selectedQuarter.value = props.modelValue.quarter;
   }
-})
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>
-
-<style scoped>
-.datepicker {
-  position: relative;
-}
-
-.datepicker-trigger {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: #ffffff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.datepicker-trigger:hover {
-  border-color: #555;
-  background: #1a1a1a;
-}
-
-.datepicker-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.datepicker-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 50;
-  min-width: 400px;
-  background: #2a2a2a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-}
-
-.datepicker-content {
-  padding: 16px;
-}
-
-.period-selector {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  background: #1a1a1a;
-  border-radius: 6px;
-  padding: 4px;
-}
-
-.period-button {
-  flex: 1;
-  padding: 8px 12px;
-  background: transparent;
-  border: none;
-  color: #888;
-  font-size: 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.period-button:hover {
-  color: #ffffff;
-  background: #333;
-}
-
-.period-button.active {
-  background: #007acc;
-  color: #ffffff;
-}
-
-.date-grid {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.date-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.date-button {
-  padding: 8px 12px;
-  background: transparent;
-  border: 1px solid #333;
-  border-radius: 4px;
-  color: #888;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.date-button:hover {
-  color: #ffffff;
-  border-color: #555;
-  background: #333;
-}
-
-.date-button.active {
-  background: #007acc;
-  border-color: #007acc;
-  color: #ffffff;
-}
-
-.datepicker-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.confirm-button {
-  padding: 8px 16px;
-  background: #007acc;
-  border: none;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.confirm-button:hover {
-  background: #0056b3;
-}
-</style>
