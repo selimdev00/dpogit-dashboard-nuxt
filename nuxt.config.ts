@@ -11,8 +11,6 @@ export default defineNuxtConfig({
     plugins: "app/plugins",
   },
 
-  ssr: false,
-
   vite: {
     plugins: [tailwindcss()],
 
@@ -39,13 +37,6 @@ export default defineNuxtConfig({
         { name: "apple-mobile-web-app-status-bar-style", content: "default" },
         { name: "apple-touch-fullscreen", content: "yes" },
       ],
-    },
-  },
-
-  nitro: {
-    preset: "static",
-    experimental: {
-      wasm: true,
     },
   },
 });

@@ -8,11 +8,5 @@ export default {
       path: "/",
       component: () => import("@/pages/home").then((r) => r.HomePage),
     },
-    {
-      name: "onboarding",
-      path: "/onboarding",
-      component: () =>
-        import("@/pages/onboarding").then((r) => r.OnboardingPage),
-    },
   ],
 } satisfies RouterConfig;

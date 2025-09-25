@@ -15,6 +15,9 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        'sans': ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -55,6 +58,9 @@ module.exports = {
             gradient: "var(--gradient)",
           },
         },
+        danger: "var(--color-danger)",
+        warning: "var(--color-warning)",
+        success: "var(--color-success)",
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",

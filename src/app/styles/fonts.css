@@ -1,18 +1,17 @@
 @font-face {
-  font-family: "Advent Pro";
-  src: url("@/app/fonts/Advent_Pro/AdventPro-VariableFont_wdth,wght.ttf")
+  font-family: "Inter";
+  src: url("@/app/fonts/Inter/Inter-VariableFont_opsz,wght.ttf")
     format("truetype");
   font-weight: 100 900;
-  font-stretch: 75% 125%;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Manrope";
-  src: url("@/app/fonts/Manrope/Manrope-VariableFont_wght.ttf")
+  font-family: "Inter";
+  src: url("@/app/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf")
     format("truetype");
   font-weight: 100 900;
-  font-style: normal;
+  font-style: italic;
   font-display: swap;
 }
