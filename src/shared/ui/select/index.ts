@@ -1,0 +1,11 @@
+export { default as UiSelect } from "./Select.vue";
+export { default as UiSelectContent } from "./SelectContent.vue";
+export { default as UiSelectGroup } from "./SelectGroup.vue";
+export { default as UiSelectItem } from "./SelectItem.vue";
+export { default as UiSelectItemText } from "./SelectItemText.vue";
+export { default as UiSelectLabel } from "./SelectLabel.vue";
+export { default as UiSelectScrollDownButton } from "./SelectScrollDownButton.vue";
+export { default as UiSelectScrollUpButton } from "./SelectScrollUpButton.vue";
+export { default as UiSelectSeparator } from "./SelectSeparator.vue";
+export { default as UiSelectTrigger } from "./SelectTrigger.vue";
+export { default as UiSelectValue } from "./SelectValue.vue";

@@ -1,0 +1,7 @@
+services:
+  dpogti_dashboard:
+    build:
+      context: .
+      dockerfile: ./src/app/docker/Dockerfile
+    ports:
+      - "3000:3000"
