@@ -66,20 +66,19 @@
       </svg>
 
       <span class="text-sm font-medium text-muted-foreground">
-          <span
-              v-if="changePercent !== undefined"
-              :class="[
-              'text-xs font-medium',
-              {
-                'text-success': changeType === 'increase',
-                'text-danger': changeType === 'decrease',
-                'text-muted-foreground': changeType === 'neutral'
-              }
-            ]"
-          >
-            {{ changePercent >= 0 ? '+' : '' }}{{ changePercent.toFixed(1) }}%
-          </span>
-
+        <span
+          v-if="changePercent !== undefined"
+          :class="[
+            'text-xs font-medium',
+            {
+              'text-success': changeType === 'increase',
+              'text-danger': changeType === 'decrease',
+              'text-muted-foreground': changeType === 'neutral',
+            },
+          ]"
+        >
+          {{ changePercent >= 0 ? "+" : "" }}{{ changePercent.toFixed(1) }}%
+        </span>
 
         {{ changeText }}
       </span>
@@ -88,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatValue, type FormatType } from '@/shared/lib/formatters'
+import { formatValue, type FormatType } from "@/shared/lib/formatters";
 
 interface MetricCardProps {
   title: string;
@@ -110,13 +109,13 @@ const props = withDefaults(defineProps<MetricCardProps>(), {
 const showChange = computed(() => props.changeText !== undefined);
 
 const formattedValue = computed(() => {
-  return formatValue(props.value, props.formatType)
-})
+  return formatValue(props.value, props.formatType);
+});
 
 const formattedPlan = computed(() => {
-  if (!props.plan) return ''
-  return formatValue(props.plan, props.formatType)
-})
+  if (!props.plan) return "";
+  return formatValue(props.plan, props.formatType);
+});
 
 const progressColor = computed(() => {
   if (props.progressValue === undefined) return "bg-primary";

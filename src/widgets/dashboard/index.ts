@@ -1,1 +1,1 @@
-export { default as DashboardGrid } from './ui/DashboardGrid.vue'
+export { default as DashboardGrid } from "./ui/DashboardGrid.vue";

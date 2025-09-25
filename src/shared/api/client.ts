@@ -1,64 +1,76 @@
-import type { ApiQueryParams, MetricApiResponse, MetricKey, Department } from './types'
+import type {
+  ApiQueryParams,
+  MetricApiResponse,
+  MetricKey,
+  Department,
+} from "./types";
 
 class ApiClient {
   private getBaseUrl(): string {
-    const config = useRuntimeConfig()
-    return config.public.apiHost as string
+    const config = useRuntimeConfig();
+    return config.public.apiHost as string;
   }
 
   private buildQueryString(params: ApiQueryParams): string {
-    const searchParams = new URLSearchParams()
+    const searchParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
           // Handle array parameters like employee_ids[]
-          value.forEach(item => {
-            searchParams.append(`${key}[]`, item.toString())
-          })
+          value.forEach((item) => {
+            searchParams.append(`${key}[]`, item.toString());
+          });
         } else {
-          searchParams.append(key, value.toString())
+          searchParams.append(key, value.toString());
         }
       }
-    })
+    });
 
-    return searchParams.toString()
+    return searchParams.toString();
   }
 
-  async fetchMetric(key: MetricKey, params: ApiQueryParams = {}): Promise<MetricApiResponse> {
-    const queryString = this.buildQueryString(params)
-    const url = `${this.getBaseUrl()}/api/${key}${queryString ? `?${queryString}` : ''}`
+  async fetchMetric(
+    key: MetricKey,
+    params: ApiQueryParams = {},
+  ): Promise<MetricApiResponse> {
+    const queryString = this.buildQueryString(params);
+    const url = `${this.getBaseUrl()}/api/${key}${queryString ? `?${queryString}` : ""}`;
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`,
+      );
     }
 
-    return response.json()
+    return response.json();
   }
 
   async fetchDepartments(): Promise<Department[]> {
-    const url = `${this.getBaseUrl()}/api/departments`
+    const url = `${this.getBaseUrl()}/api/departments`;
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`,
+      );
     }
 
-    return response.json()
+    return response.json();
   }
 }
 
-export const apiClient = new ApiClient()
+export const apiClient = new ApiClient();

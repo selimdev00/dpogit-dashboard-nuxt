@@ -1,1 +1,1 @@
-export { default as MetricCard } from './MetricCard.vue'
+export { default as MetricCard } from "./MetricCard.vue";

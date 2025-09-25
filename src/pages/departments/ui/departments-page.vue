@@ -1,47 +1,57 @@
 <template>
   <div class="min-h-screen bg-background">
     <div class="container mx-auto py-8">
-      <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <h1 class="text-2xl font-bold text-foreground">Отделы</h1>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-            Выставить план
-          </button>
+          <Button> Выставить план </Button>
 
-          <select
-            v-model="selectedDepartmentId"
-            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[250px]"
-            @change="onDepartmentChange"
-          >
-            <option value="" disabled>Выберите отдел</option>
-            <option
-              v-for="department in data"
-              :key="department.id"
-              :value="department.id"
-            >
-              {{ department.name }}
-            </option>
-          </select>
+          <Select v-model="selectedDepartmentId" @change="onDepartmentChange">
+            <SelectTrigger>
+              <SelectValue placeholder="Select a fruit" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="department in data"
+                :key="department.id"
+                :value="department.id"
+              >
+                {{ department.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex items-center justify-center py-12">
-        <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-r-transparent"></div>
+        <div
+          class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-r-transparent"
+        ></div>
         <span class="ml-3 text-muted-foreground">Загрузка...</span>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
+      <div
+        v-else-if="error"
+        class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center"
+      >
         <h3 class="mb-2 font-medium text-destructive">Ошибка загрузки</h3>
         <p class="text-sm text-destructive/80">{{ error.message }}</p>
       </div>
 
       <!-- Department Content -->
-      <div v-else-if="selectedDepartment" class="rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div
+        v-else-if="selectedDepartment"
+        class="rounded-lg border bg-card text-card-foreground shadow-sm"
+      >
         <!-- Table Header -->
-        <div class="grid grid-cols-6 gap-4 border-b bg-muted/50 p-4 text-sm font-medium text-muted-foreground">
+        <div
+          class="grid grid-cols-7 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
+        >
           <div class="col-span-2">Сотрудник</div>
           <div class="text-center">Лиды, шт</div>
           <div class="text-center">Продажи, шт</div>
@@ -55,7 +65,7 @@
           <div
             v-for="employee in selectedDepartment.employees"
             :key="employee.id"
-            class="grid grid-cols-6 gap-4 p-4 transition-colors hover:bg-muted/50"
+            class="grid grid-cols-7 gap-4 p-4 transition-colors hover:bg-muted/10"
           >
             <!-- Employee Info -->
             <div class="col-span-2 flex items-center gap-3">
@@ -74,17 +84,44 @@
                 </div>
               </div>
               <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium text-foreground">{{ employee.name }}</p>
-                <p v-if="employee.position" class="truncate text-xs text-muted-foreground">{{ employee.position }}</p>
+                <p class="truncate text-sm font-medium text-foreground">
+                  {{ employee.name }}
+                </p>
+                <p
+                  v-if="employee.position"
+                  class="truncate text-xs text-muted-foreground"
+                >
+                  {{ employee.position }}
+                </p>
               </div>
             </div>
 
             <!-- Metrics -->
-            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
-            <div class="flex items-center justify-center text-sm text-muted-foreground">0</div>
+            <div
+              class="flex items-center justify-center text-sm text-muted-foreground"
+            >
+              0
+            </div>
+            <div
+              class="flex items-center justify-center text-sm text-muted-foreground"
+            >
+              0
+            </div>
+            <div
+              class="flex items-center justify-center text-sm text-muted-foreground"
+            >
+              0
+            </div>
+            <div
+              class="flex items-center justify-center text-sm text-muted-foreground"
+            >
+              0
+            </div>
+            <div
+              class="flex items-center justify-center text-sm text-muted-foreground"
+            >
+              0
+            </div>
           </div>
         </div>
       </div>
@@ -92,8 +129,12 @@
       <!-- No Selection State -->
       <div v-else class="flex items-center justify-center py-12">
         <div class="text-center">
-          <h3 class="mb-2 text-lg font-medium text-foreground">Выберите отдел</h3>
-          <p class="text-muted-foreground">Выберите отдел из списка для просмотра сотрудников</p>
+          <h3 class="mb-2 text-lg font-medium text-foreground">
+            Выберите отдел
+          </h3>
+          <p class="text-muted-foreground">
+            Выберите отдел из списка для просмотра сотрудников
+          </p>
         </div>
       </div>
     </div>
@@ -101,39 +142,52 @@
 </template>
 
 <script setup lang="ts">
-import { useDepartmentsQuery } from '@/shared/api'
-import type { Department } from '@/shared/api/types'
+import { useDepartmentsQuery } from "@/shared/api";
+import type { Department } from "@/shared/api/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/shared/ui/select";
+import { Button } from "~/shared/ui/button";
 
 definePageMeta({
-  layout: 'default'
-})
+  layout: "default",
+});
 
-const selectedDepartmentId = ref<number | ''>('')
+const selectedDepartmentId = ref<number | "">("");
 
-const { data, isLoading, error } = useDepartmentsQuery()
+const { data, isLoading, error } = useDepartmentsQuery();
 
 const selectedDepartment = computed<Department | null>(() => {
-  if (!data.value || !selectedDepartmentId.value) return null
-  return data.value.find(dept => dept.id === selectedDepartmentId.value) || null
-})
+  if (!data.value || !selectedDepartmentId.value) return null;
+  return (
+    data.value.find((dept) => dept.id === selectedDepartmentId.value) || null
+  );
+});
 
 const getInitials = (name: string): string => {
-  const parts = name.split(' ')
+  const parts = name.split(" ");
   if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
-  return parts[0][0].toUpperCase()
-}
+  return parts[0][0].toUpperCase();
+};
 
 const onDepartmentChange = () => {
   // Additional logic if needed when department changes
-}
+};
 
 // Set first department as default when data loads
-watch(data, (newData) => {
-  if (newData && newData.length > 0 && !selectedDepartmentId.value) {
-    selectedDepartmentId.value = newData[0].id
-  }
-}, { immediate: true })
+watch(
+  data,
+  (newData) => {
+    if (newData && newData.length > 0 && !selectedDepartmentId.value) {
+      selectedDepartmentId.value = newData[0].id;
+    }
+  },
+  { immediate: true },
+);
 </script>
-

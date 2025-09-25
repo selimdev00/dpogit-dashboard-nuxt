@@ -12,8 +12,8 @@
   "dependencies": {
     "@pinia/nuxt": "^0.11.2",
     "@tailwindcss/vite": "^4.1.13",
-    "@vee-validate/yup": "^4.15.1",
     "@tanstack/vue-query": "^5.18.1",
+    "@vee-validate/yup": "^4.15.1",
     "@vueuse/core": "^13.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

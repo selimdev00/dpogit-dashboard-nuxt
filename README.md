@@ -1,4 +1,5 @@
 # От разработчика
+
 Nuxt 4 + FSD + Shadcn (Tailwind v3)
 
 # Nuxt Minimal Starter

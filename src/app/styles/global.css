@@ -48,15 +48,15 @@
 
   --font-inter: "Inter", sans-serif;
 
-  --danger: #F7716E;
-  --warning: #FA976C;
-  --success: #C6EC92;
+  --danger: #f7716e;
+  --warning: #fa976c;
+  --success: #c6ec92;
 }
 
 :root {
   --background: #111111;
   --foreground: rgba(255, 255, 255, 1);
-  --card: #1B1B1E;
+  --card: #1b1b1e;
   --card-foreground: white;
   --popover: rgba(32, 32, 32, 1);
   --popover-foreground: rgba(255, 255, 255, 1);
@@ -134,5 +134,5 @@
 }
 
 .container {
-    @apply mx-auto max-w-[1530px];
+  @apply mx-auto max-w-[1530px];
 }
