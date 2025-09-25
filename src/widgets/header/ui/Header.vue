@@ -8,7 +8,7 @@
         </NuxtLink>
 
         <!-- DatePicker -->
-        <DatePicker v-model="selectedDateRange" @update:modelValue="handleDateChange" />
+        <DatePicker v-model="dashboardStore.selectedDateRange" @update:modelValue="handleDateChange" />
 
       </div>
 
@@ -32,30 +32,17 @@
 <script lang="ts" setup>
 import { Logo } from '@/shared/ui/logo'
 import { DatePicker } from '@/shared/ui/datepicker'
+import { useDashboardStore, type DateRange } from '@/shared/stores/dashboard'
 
 interface NavItem {
   path: string
   label: string
 }
 
-interface DateRange {
-  period: string
-  year: number
-  month?: number
-  quarter?: number
-  dateFrom?: string
-  dateTo?: string
-}
-
-const selectedDateRange = ref<DateRange>({
-  period: 'month',
-  year: 2025,
-  month: 9
-})
+const dashboardStore = useDashboardStore()
 
 const handleDateChange = (value: DateRange) => {
-  selectedDateRange.value = value
-  // TODO: Emit or handle date change to update dashboard data
+  dashboardStore.setDateRange(value)
   console.log('Date range changed:', value)
 }
 

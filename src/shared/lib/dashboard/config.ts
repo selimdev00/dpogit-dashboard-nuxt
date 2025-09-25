@@ -28,8 +28,6 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     title: "Сумма выставленных счетов ",
     apiKey: "invoices",
     apiParams: {
-      dateFrom: "2025-09-01",
-      dateTo: "2025-09-30",
       by: "currency",
     },
     formatType: "currency",
@@ -43,8 +41,6 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     title: "Звонки исх/вх",
     apiKey: "calls",
     apiParams: {
-      dateFrom: "2025-09-01",
-      dateTo: "2025-09-30",
       by: "currency",
     },
     formatType: "count",

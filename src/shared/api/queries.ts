@@ -19,7 +19,7 @@ export function useMetricQuery(
   return useQuery({
     queryKey: ['metric', keyRef, paramsRef] as const,
     queryFn: () => apiClient.fetchMetric(unref(keyRef), unref(paramsRef)),
-    enabled: (options.enabled ?? true) && process.client, // Only run on client
+    enabled: (options.enabled ?? true), // Only run on client
     staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
     refetchInterval: options.refetchInterval,
   })
@@ -27,12 +27,16 @@ export function useMetricQuery(
 
 // Convenience function for multiple metrics
 export function useMultipleMetrics(
-  metrics: Array<{ key: MetricKey; params?: ApiQueryParams }>,
+  metrics: Ref<Array<{ key: MetricKey; params?: ApiQueryParams }>> | Array<{ key: MetricKey; params?: ApiQueryParams }>,
   options: UseMetricQueryOptions = {}
 ) {
-  return metrics.map(({ key, params = {} }) =>
-    useMetricQuery(key, params, options)
-  )
+  const metricsRef = isRef(metrics) ? metrics : ref(metrics)
+
+  return computed(() => {
+    return unref(metricsRef).map(({ key, params = {} }) =>
+      useMetricQuery(key, params, options)
+    )
+  })
 }
 
 // Query for departments
