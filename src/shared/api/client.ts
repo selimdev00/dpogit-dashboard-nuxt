@@ -1,11 +1,9 @@
-import type { ApiQueryParams, MetricApiResponse, MetricKey } from './types'
+import type { ApiQueryParams, MetricApiResponse, MetricKey, Department } from './types'
 
 class ApiClient {
-  private baseUrl: string
-
-  constructor() {
+  private getBaseUrl(): string {
     const config = useRuntimeConfig()
-    this.baseUrl = config.public.apiHost as string
+    return config.public.apiHost as string
   }
 
   private buildQueryString(params: ApiQueryParams): string {
@@ -29,7 +27,24 @@ class ApiClient {
 
   async fetchMetric(key: MetricKey, params: ApiQueryParams = {}): Promise<MetricApiResponse> {
     const queryString = this.buildQueryString(params)
-    const url = `${this.baseUrl}/api/${key}${queryString ? `?${queryString}` : ''}`
+    const url = `${this.getBaseUrl()}/api/${key}${queryString ? `?${queryString}` : ''}`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  async fetchDepartments(): Promise<Department[]> {
+    const url = `${this.getBaseUrl()}/api/departments`
 
     const response = await fetch(url, {
       method: 'GET',

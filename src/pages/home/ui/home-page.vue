@@ -2,30 +2,8 @@
   <div class="min-h-screen bg-background">
     <div class="container mx-auto py-8">
       <div class="mb-8 flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-foreground">Дашборд</h1>
-          <p class="text-muted-foreground mt-2">
-            Обзор основных метрик и показателей эффективности
-          </p>
-        </div>
-
         <!-- Only render refresh button on client -->
         <ClientOnly>
-          <button
-            @click="refetchAll"
-            :disabled="isLoading"
-            class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-          >
-            <svg
-              :class="['h-4 w-4', { 'animate-spin': isLoading }]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>{{ isLoading ? 'Загрузка...' : 'Обновить' }}</span>
-          </button>
           <template #fallback>
             <div class="px-4 py-2 bg-primary/50 text-primary-foreground rounded-md flex items-center space-x-2">
               <div class="h-4 w-4 bg-primary-foreground/50 rounded"></div>

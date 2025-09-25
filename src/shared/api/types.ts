@@ -29,3 +29,18 @@ export interface ApiQueryParams {
 }
 
 export type MetricKey = string
+
+export interface Employee {
+  id: number
+  name: string
+  position: string
+  photo: string | null
+  color: string | null
+}
+
+export interface Department {
+  id: number
+  name: string
+  color: string | null
+  employees: Employee[]
+}

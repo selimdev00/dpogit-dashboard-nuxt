@@ -11,11 +11,13 @@
       <!-- Navigation -->
       <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
         <NuxtLink
-          to="/"
+          v-for="item in navItems"
+          :key="item.path"
+          :to="item.path"
           class="transition-colors hover:text-foreground/80 text-foreground/60"
           active-class="text-foreground"
         >
-          Главная
+          {{ item.label }}
         </NuxtLink>
       </nav>
 
@@ -25,4 +27,20 @@
 
 <script lang="ts" setup>
 import { Logo } from '@/shared/ui/logo'
+
+interface NavItem {
+  path: string
+  label: string
+}
+
+const navItems: NavItem[] = [
+  {
+    path: '/',
+    label: 'Главная'
+  },
+  {
+    path: '/departments',
+    label: 'Отделы'
+  }
+]
 </script>

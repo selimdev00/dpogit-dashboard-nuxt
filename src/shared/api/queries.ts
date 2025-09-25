@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryReturnType } from '@tanstack/vue-query'
 import { apiClient } from './client'
-import type { MetricApiResponse, ApiQueryParams, MetricKey } from './types'
+import type { MetricApiResponse, ApiQueryParams, MetricKey, Department } from './types'
 
 export interface UseMetricQueryOptions {
   enabled?: boolean
@@ -33,4 +33,17 @@ export function useMultipleMetrics(
   return metrics.map(({ key, params = {} }) =>
     useMetricQuery(key, params, options)
   )
+}
+
+// Query for departments
+export function useDepartmentsQuery(
+  options: UseMetricQueryOptions = {}
+): UseQueryReturnType<Department[], Error> {
+  return useQuery({
+    queryKey: ['departments'] as const,
+    queryFn: () => apiClient.fetchDepartments(),
+    enabled: (options.enabled ?? true) && process.client,
+    staleTime: options.staleTime ?? 10 * 60 * 1000, // 10 minutes
+    refetchInterval: options.refetchInterval,
+  })
 }
