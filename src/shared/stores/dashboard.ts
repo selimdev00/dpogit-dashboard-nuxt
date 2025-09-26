@@ -11,23 +11,66 @@ export interface DateRange {
   endDate?: string;
 }
 
-export const useDashboardStore = defineStore("dashboard", () => {
-  // State
-  const selectedDateRange = ref<DateRange>({
+const STORAGE_KEY = "dashboard-date-range";
+
+function getDefaultDateRange(): DateRange {
+  return {
     period: "month",
     year: 2025,
     month: 9,
     dateFrom: "2025-09-01",
     dateTo: "2025-09-30",
-  });
+  };
+}
+
+function loadDateRangeFromStorage(): DateRange {
+  if (process.server) return getDefaultDateRange();
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Validate the structure has required fields
+      if (parsed.period && parsed.year) {
+        return { ...getDefaultDateRange(), ...parsed };
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to load date range from localStorage:", error);
+  }
+
+  return getDefaultDateRange();
+}
+
+function saveDateRangeToStorage(range: DateRange) {
+  if (process.server) return;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(range));
+  } catch (error) {
+    console.warn("Failed to save date range to localStorage:", error);
+  }
+}
+
+export const useDashboardStore = defineStore("dashboard", () => {
+  // State
+  const selectedDateRange = ref<DateRange>(loadDateRangeFromStorage());
 
   // Actions
   const setDateRange = (dateRange: DateRange) => {
     selectedDateRange.value = { ...dateRange };
+    saveDateRangeToStorage(selectedDateRange.value);
   };
 
   const updateDateRange = (updates: Partial<DateRange>) => {
     selectedDateRange.value = { ...selectedDateRange.value, ...updates };
+    saveDateRangeToStorage(selectedDateRange.value);
+  };
+
+  const initFromStorage = () => {
+    if (process.client) {
+      selectedDateRange.value = loadDateRangeFromStorage();
+    }
   };
 
   // Getters
@@ -88,6 +131,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     // Actions
     setDateRange,
     updateDateRange,
+    initFromStorage,
 
     // Getters
     getFormattedDateRange,
