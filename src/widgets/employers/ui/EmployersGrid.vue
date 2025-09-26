@@ -11,7 +11,7 @@
     <!-- Employee Cards Grid -->
     <div
       v-if="employees && employees.length > 0"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      class="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
       <EmployeeCard
         v-for="employee in employees"
@@ -26,17 +26,12 @@
     </div>
 
     <!-- Empty State -->
-    <div
-      v-else-if="!isLoading"
-      class="flex items-center justify-center py-12"
-    >
+    <div v-else-if="!isLoading" class="flex items-center justify-center py-12">
       <div class="text-center">
         <h3 class="mb-2 text-lg font-medium text-foreground">
           Нет сотрудников
         </h3>
-        <p class="text-muted-foreground">
-          Сотрудники не найдены в этом отделе
-        </p>
+        <p class="text-muted-foreground">Сотрудники не найдены в этом отделе</p>
       </div>
     </div>
   </div>
@@ -70,15 +65,17 @@ const props = withDefaults(defineProps<EmployersGridProps>(), {
 });
 
 const getEmployeeMetrics = (employeeId: number): EmployeeMetrics => {
-  return props.employeeMetrics[employeeId] || {
-    leads: 0,
-    leadsTotal: 0,
-    sales: 0,
-    salesTotal: 0,
-    contracts: 0,
-    contractsTotal: 0,
-    margin: 0,
-    marginTotal: 0,
-  };
+  return (
+    props.employeeMetrics[employeeId] || {
+      leads: 0,
+      leadsTotal: 0,
+      sales: 0,
+      salesTotal: 0,
+      contracts: 0,
+      contractsTotal: 0,
+      margin: 0,
+      marginTotal: 0,
+    }
+  );
 };
 </script>
