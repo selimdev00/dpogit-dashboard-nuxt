@@ -4,10 +4,29 @@
       <div
         class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
-        <h1 class="text-2xl font-bold text-foreground">Планы</h1>
+        <div>
+          <h1 class="text-2xl font-bold text-foreground">Планы</h1>
+          <p class="text-sm text-muted-foreground">
+            Текущий месяц: {{ currentMonth }}
+            <span v-if="plansLoading" class="ml-2 text-blue-500">(загрузка...)</span>
+          </p>
+          <button
+            @click="testChangeMonth"
+            class="text-xs bg-blue-500 text-white px-2 py-1 rounded mt-1"
+          >
+            Test: Change to 2025-10
+          </button>
+        </div>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button> Сохранить </Button>
+          <Button
+            @click="savePlans"
+            :disabled="!hasChanges || savePlansMutation.isPending.value || !authStore.canPlan"
+          >
+            {{
+              savePlansMutation.isPending.value ? "Сохранение..." : "Сохранить"
+            }}
+          </Button>
 
           <Select v-model="selectedDepartmentId" @change="onDepartmentChange">
             <SelectTrigger>
@@ -43,11 +62,67 @@
         <p class="text-sm text-destructive/80">{{ error.message }}</p>
       </div>
 
+      <!-- Save Success Message -->
+      <div
+        v-if="
+          savePlansMutation.isSuccess.value &&
+          !savePlansMutation.isPending.value
+        "
+        class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
+      >
+        <h3 class="text-green-800 font-medium">Планы успешно сохранены</h3>
+      </div>
+
+      <!-- Save Error Message -->
+      <div
+        v-if="savePlansMutation.isError.value"
+        class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+      >
+        <h3 class="text-destructive font-medium mb-2">Ошибка сохранения</h3>
+        <p class="text-sm text-destructive/80">
+          {{ savePlansMutation.error.value?.message || "Неизвестная ошибка" }}
+        </p>
+      </div>
+
+      <!-- Plans Error Message -->
+      <div
+        v-if="plansError && !plansLoading"
+        class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+      >
+        <h3 class="text-destructive font-medium mb-2">Ошибка загрузки планов</h3>
+        <p class="text-sm text-destructive/80">
+          {{ plansError.message || "Не удалось загрузить данные планов" }}
+        </p>
+      </div>
+
+      <!-- No Permission Warning -->
+      <div
+        v-if="!authStore.canPlan"
+        class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+      >
+        <h3 class="text-yellow-800 font-medium mb-2">Ограниченный доступ</h3>
+        <p class="text-sm text-yellow-700">
+          У вас нет прав для редактирования планов. Вы можете только просматривать данные.
+        </p>
+      </div>
+
       <!-- Department Content -->
       <div
         v-else-if="selectedDepartment"
-        class="rounded-lg border bg-card text-card-foreground shadow-sm"
+        class="rounded-lg border bg-card text-card-foreground shadow-sm relative"
       >
+        <!-- Plans Loading Overlay -->
+        <div
+          v-if="plansLoading"
+          class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg"
+        >
+          <div class="flex items-center space-x-3">
+            <div
+              class="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent"
+            ></div>
+            <span class="text-muted-foreground">Загрузка данных плана...</span>
+          </div>
+        </div>
         <!-- Table Header -->
         <div
           class="grid grid-cols-5 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
@@ -100,7 +175,8 @@
                 :value="getEmployeePlan(employee.id, 'calls')"
                 type="number"
                 min="0"
-                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                :disabled="!authStore.canPlan"
+                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                 @input="updateEmployeePlan(employee.id, 'calls', $event)"
               />
             </div>
@@ -109,7 +185,8 @@
                 :value="getEmployeePlan(employee.id, 'invoices')"
                 type="number"
                 min="0"
-                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                :disabled="!authStore.canPlan"
+                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                 @input="updateEmployeePlan(employee.id, 'invoices', $event)"
               />
             </div>
@@ -118,7 +195,8 @@
                 :value="getEmployeePlan(employee.id, 'sold_tickets')"
                 type="number"
                 min="0"
-                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                :disabled="!authStore.canPlan"
+                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                 @input="updateEmployeePlan(employee.id, 'sold_tickets', $event)"
               />
             </div>
@@ -142,25 +220,43 @@
 </template>
 
 <script setup lang="ts">
-import { useDepartmentsQuery, usePlansQuery } from "@/shared/api";
+import {
+  useDepartmentsQuery,
+  usePlansQuery,
+  useSavePlansMutation,
+} from "@/shared/api";
 import type { Department, PlanData } from "@/shared/api/types";
+import { useDashboardStore } from "@/shared/stores/dashboard";
+import { useAuthStore } from "@/shared/stores/auth";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/shared/ui/select";
-import { Button } from "~/shared/ui/button";
+} from "@/shared/ui/select";
+import { Button } from "@/shared/ui/button";
 
 definePageMeta({
   layout: "default",
+  middleware: "can-plan",
 });
 
 const selectedDepartmentId = ref<number | "">("");
 
+// Get dashboard store for date management
+const dashboardStore = useDashboardStore();
+const authStore = useAuthStore();
+
+// Create a reactive reference to the current month
+const currentMonth = computed(() => dashboardStore.getCurrentMonth);
+
 const { data, isLoading, error } = useDepartmentsQuery();
-const { data: plansData } = usePlansQuery();
+const { data: plansData, isLoading: plansLoading, error: plansError } = usePlansQuery(currentMonth);
+const savePlansMutation = useSavePlansMutation();
+
+// Store for tracking changes - structure: { employeeId: { metric: value } }
+const changedPlans = ref<Record<number, Record<string, number>>>({});
 
 // Store for employee plans - structure: { employeeId: { metric: value } }
 const employeePlans = ref<Record<number, Record<string, number>>>({});
@@ -173,12 +269,12 @@ const selectedDepartment = computed<Department | null>(() => {
 });
 
 const getInitials = (name: string): string => {
-  if (!name) return name
+  if (!name) return "";
   const parts = name.split(" ");
   if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return `${parts[0]?.[0] || ""}${parts[1]?.[0] || ""}`.toUpperCase();
   }
-  return parts[0][0].toUpperCase();
+  return parts[0]?.[0]?.toUpperCase() || "";
 };
 
 // Get employee plan value from API data or local store
@@ -186,15 +282,15 @@ const getEmployeePlan = (employeeId: number, metric: string): number => {
   // First check if we have API data for this employee
   if (plansData.value) {
     const apiPlan = plansData.value.find(
-      plan => plan.employee_id === employeeId
+      (plan) => plan.employee_id === employeeId,
     );
     if (apiPlan) {
       switch (metric) {
-        case 'calls':
+        case "calls":
           return apiPlan.calls;
-        case 'invoices':
+        case "invoices":
           return apiPlan.invoices;
-        case 'sold_tickets':
+        case "sold_tickets":
           return apiPlan.sold_tickets;
       }
     }
@@ -213,14 +309,80 @@ const updateEmployeePlan = (
   const target = event.target as HTMLInputElement;
   const value = parseInt(target.value) || 0;
 
+  // Update local store for display
   if (!employeePlans.value[employeeId]) {
     employeePlans.value[employeeId] = {};
   }
   employeePlans.value[employeeId][metric] = value;
+
+  // Track changes for saving
+  if (!changedPlans.value[employeeId]) {
+    changedPlans.value[employeeId] = {};
+  }
+  changedPlans.value[employeeId][metric] = value;
+};
+
+// Check if there are any changes to save
+const hasChanges = computed(() => {
+  return Object.keys(changedPlans.value).length > 0;
+});
+
+// Save plans function
+const savePlans = async () => {
+  if (!hasChanges.value) return;
+
+  const monthToSave = currentMonth.value; // Use reactive current month
+  const plansToSave: Partial<PlanData>[] = [];
+
+  // Convert changed plans to the API format - group by employee
+  Object.entries(changedPlans.value).forEach(([employeeIdStr, metrics]) => {
+    const employeeId = parseInt(employeeIdStr);
+
+    // Create one plan entry per employee with all their changed metrics
+    const planEntry: Partial<PlanData> = {
+      month: monthToSave,
+      employee_id: employeeId,
+    };
+
+    // Add all changed metrics to the same plan entry
+    Object.entries(metrics).forEach(([metric, value]) => {
+      switch (metric) {
+        case "calls":
+          planEntry.calls = value;
+          break;
+        case "invoices":
+          planEntry.invoices = value;
+          break;
+        case "sold_tickets":
+          planEntry.sold_tickets = value;
+          break;
+      }
+    });
+
+    plansToSave.push(planEntry);
+  });
+
+  try {
+    await savePlansMutation.mutateAsync(plansToSave as PlanData[]);
+    // Clear changes after successful save
+    changedPlans.value = {};
+  } catch (error) {
+    console.error("Failed to save plans:", error);
+  }
 };
 
 const onDepartmentChange = () => {
   // Additional logic if needed when department changes
+};
+
+// Test function to change the month and trigger loading state
+const testChangeMonth = () => {
+  dashboardStore.updateDateRange({
+    year: 2025,
+    month: 10,
+    dateFrom: "2025-10-01",
+    dateTo: "2025-10-31",
+  });
 };
 
 // Set first department as default when data loads
@@ -228,7 +390,7 @@ watch(
   data,
   (newData) => {
     if (newData && newData.length > 0 && !selectedDepartmentId.value) {
-      selectedDepartmentId.value = newData[0].id;
+      selectedDepartmentId.value = newData[0]?.id || "";
     }
   },
   { immediate: true },

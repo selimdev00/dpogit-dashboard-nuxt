@@ -33,13 +33,10 @@
 
         <!-- User Menu -->
         <div class="flex items-center space-x-2">
-          <span class="text-sm text-muted-foreground">{{ authStore.user?.name }}</span>
-          <button
-            @click="handleLogout"
-            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
-          >
-            Выйти
-          </button>
+          <span class="text-sm text-muted-foreground">{{
+            authStore.user?.name
+          }}</span>
+          <Button @click="handleLogout" variant="secondary"> Выйти </Button>
         </div>
       </div>
     </div>
@@ -51,6 +48,7 @@ import { Logo } from "@/shared/ui/logo";
 import { DatePicker } from "@/shared/ui/datepicker";
 import { useDashboardStore, type DateRange } from "@/shared/stores/dashboard";
 import { useAuthStore } from "@/shared/stores/auth";
+import { Button } from "@/shared/ui/button";
 
 interface NavItem {
   path: string;

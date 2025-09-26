@@ -71,6 +71,16 @@ export const useDashboardStore = defineStore("dashboard", () => {
     dateTo: selectedDateRange.value.dateTo,
   }));
 
+  const getCurrentMonth = computed(() => {
+    const range = selectedDateRange.value;
+    if (range.year && range.month) {
+      return `${range.year}-${range.month.toString().padStart(2, '0')}`;
+    }
+    // Fallback to current month if not set
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+  });
+
   return {
     // State
     selectedDateRange: readonly(selectedDateRange),
@@ -82,5 +92,6 @@ export const useDashboardStore = defineStore("dashboard", () => {
     // Getters
     getFormattedDateRange,
     getApiParams,
+    getCurrentMonth,
   };
 });

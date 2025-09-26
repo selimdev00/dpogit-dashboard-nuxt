@@ -73,8 +73,14 @@ class ApiClient {
     return response.json();
   }
 
-  async fetchPlans(): Promise<PlanData[]> {
-    const url = `${this.getBaseUrl()}/api/plans`;
+  async fetchPlans(month?: string): Promise<PlanData[]> {
+    const params: Record<string, string> = {};
+    if (month) {
+      params.month = month;
+    }
+
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${this.getBaseUrl()}/api/plans${queryString ? `?${queryString}` : ""}`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -90,6 +96,24 @@ class ApiClient {
     }
 
     return response.json();
+  }
+
+  async savePlans(plans: PlanData[]): Promise<void> {
+    const url = `${this.getBaseUrl()}/api/plans`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ plans }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`,
+      );
+    }
   }
 }
 

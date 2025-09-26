@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryReturnType } from "@tanstack/vue-query";
+import { useQuery, useMutation, useQueryClient, type UseQueryReturnType } from "@tanstack/vue-query";
 import { apiClient } from "./client";
 import type {
   MetricApiResponse,
@@ -73,13 +73,29 @@ export function useDepartmentsQuery(
 
 // Query for plans
 export function usePlansQuery(
+  month?: Ref<string> | string,
   options: UseMetricQueryOptions = {},
 ): UseQueryReturnType<PlanData[], Error> {
+  const monthRef = isRef(month) ? month : ref(month);
+
   return useQuery({
-    queryKey: ["plans"] as const,
-    queryFn: () => apiClient.fetchPlans(),
+    queryKey: computed(() => ["plans", unref(monthRef)] as const),
+    queryFn: () => apiClient.fetchPlans(unref(monthRef)),
     enabled: (options.enabled ?? true) && process.client,
     staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
     refetchInterval: options.refetchInterval,
+  });
+}
+
+// Mutation for saving plans
+export function useSavePlansMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (plans: PlanData[]) => apiClient.savePlans(plans),
+    onSuccess: () => {
+      // Invalidate all plans queries after successful save
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
+    },
   });
 }
