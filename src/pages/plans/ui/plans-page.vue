@@ -8,20 +8,20 @@
           <h1 class="text-2xl font-bold text-foreground">Планы</h1>
           <p class="text-sm text-muted-foreground">
             Текущий месяц: {{ currentMonth }}
-            <span v-if="plansLoading" class="ml-2 text-blue-500">(загрузка...)</span>
+            <span v-if="plansLoading" class="ml-2 text-blue-500"
+              >(загрузка...)</span
+            >
           </p>
-          <button
-            @click="testChangeMonth"
-            class="text-xs bg-blue-500 text-white px-2 py-1 rounded mt-1"
-          >
-            Test: Change to 2025-10
-          </button>
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Button
             @click="savePlans"
-            :disabled="!hasChanges || savePlansMutation.isPending.value || !authStore.canPlan"
+            :disabled="
+              !hasChanges ||
+              savePlansMutation.isPending.value ||
+              !authStore.canPlan
+            "
           >
             {{
               savePlansMutation.isPending.value ? "Сохранение..." : "Сохранить"
@@ -89,7 +89,9 @@
         v-if="plansError && !plansLoading"
         class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
       >
-        <h3 class="text-destructive font-medium mb-2">Ошибка загрузки планов</h3>
+        <h3 class="text-destructive font-medium mb-2">
+          Ошибка загрузки планов
+        </h3>
         <p class="text-sm text-destructive/80">
           {{ plansError.message || "Не удалось загрузить данные планов" }}
         </p>
@@ -102,7 +104,8 @@
       >
         <h3 class="text-yellow-800 font-medium mb-2">Ограниченный доступ</h3>
         <p class="text-sm text-yellow-700">
-          У вас нет прав для редактирования планов. Вы можете только просматривать данные.
+          У вас нет прав для редактирования планов. Вы можете только
+          просматривать данные.
         </p>
       </div>
 
@@ -252,15 +255,19 @@ const authStore = useAuthStore();
 const currentMonth = computed(() => dashboardStore.getCurrentMonth);
 
 const { data: allDepartments, isLoading, error } = useDepartmentsQuery();
-const { data: plansData, isLoading: plansLoading, error: plansError } = usePlansQuery(currentMonth);
+const {
+  data: plansData,
+  isLoading: plansLoading,
+  error: plansError,
+} = usePlansQuery(currentMonth);
 const savePlansMutation = useSavePlansMutation();
 
 // Filter departments based on user's departmentIds access
 const data = computed(() => {
   if (!allDepartments.value) return null;
 
-  return allDepartments.value.filter(department =>
-    authStore.canAccessDepartment(department.id)
+  return allDepartments.value.filter((department) =>
+    authStore.canAccessDepartment(department.id),
   );
 });
 
@@ -382,16 +389,6 @@ const savePlans = async () => {
 
 const onDepartmentChange = () => {
   // Additional logic if needed when department changes
-};
-
-// Test function to change the month and trigger loading state
-const testChangeMonth = () => {
-  dashboardStore.updateDateRange({
-    year: 2025,
-    month: 10,
-    dateFrom: "2025-10-01",
-    dateTo: "2025-10-31",
-  });
 };
 
 // Set first department as default when data loads

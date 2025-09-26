@@ -25,6 +25,7 @@ export default {
       component: () => import("@/pages/plans").then((r) => r.PlansPage),
       meta: {
         layout: "default",
+        middleware: "can-plan",
       },
     },
     {

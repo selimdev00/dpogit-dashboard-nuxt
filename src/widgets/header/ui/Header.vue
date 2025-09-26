@@ -20,15 +20,16 @@
       <div class="flex items-center space-x-4">
         <!-- Navigation -->
         <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-          <NuxtLink
-            v-for="item in navItems"
-            :key="item.path"
-            :to="item.path"
-            class="transition-colors hover:text-foreground/80 text-foreground/60"
-            active-class="text-foreground"
-          >
-            {{ item.label }}
-          </NuxtLink>
+          <template v-for="item in navItems" :key="item.path">
+            <NuxtLink
+              v-if="!item.disabled"
+              :to="item.path"
+              class="transition-colors hover:text-foreground/80 text-foreground/60"
+              active-class="text-foreground"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </template>
         </nav>
 
         <!-- User Menu -->
@@ -53,6 +54,7 @@ import { Button } from "@/shared/ui/button";
 interface NavItem {
   path: string;
   label: string;
+  disabled?: boolean;
 }
 
 const dashboardStore = useDashboardStore();
@@ -75,6 +77,7 @@ const navItems: NavItem[] = [
   {
     path: "/plans",
     label: "Планы",
+    disabled: !authStore.canPlan,
   },
 ];
 </script>

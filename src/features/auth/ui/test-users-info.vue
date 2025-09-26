@@ -4,13 +4,15 @@
     <div class="space-y-2 text-xs text-muted-foreground">
       <div>
         <strong>Администратор:</strong> admin@dpogti.ru / password
-        <br>
+        <br />
         <span class="text-xs">Доступ ко всем отделам, может планировать</span>
       </div>
       <div>
         <strong>Менеджер:</strong> manager@dpogti.ru / password
-        <br>
-        <span class="text-xs">Доступ к отделу продаж, не может планировать</span>
+        <br />
+        <span class="text-xs"
+          >Доступ к ограниченному числу отделов, не может планировать</span
+        >
       </div>
     </div>
   </div>
