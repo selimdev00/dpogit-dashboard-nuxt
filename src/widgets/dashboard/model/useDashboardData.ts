@@ -1,4 +1,4 @@
-import { useMultipleMetrics } from "@/shared/api";
+import { useMetricQuery } from "@/shared/api";
 import {
   dashboardMetricsConfig,
   type DashboardMetricConfig,
@@ -10,24 +10,30 @@ import { useDashboardStore } from "@/shared/stores/dashboard";
 export function useDashboardData() {
   const dashboardStore = useDashboardStore();
 
-  // Create reactive queries that update when date range changes
-  const metricQueries = useMultipleMetrics(
-    computed(() =>
-      dashboardMetricsConfig.map((config) => ({
-        key: config.apiKey,
-        params: {
-          ...config.apiParams,
-          ...dashboardStore.getApiParams,
-        },
-      })),
-    ),
-  );
+  // Create individual queries for each metric
+  const metricQueries = dashboardMetricsConfig.map((config) => {
+    const params = computed(() => ({
+      ...config.apiParams,
+      ...dashboardStore.getApiParams,
+    }));
+
+    return useMetricQuery(config.apiKey, params);
+  });
 
   // Transform API data to dashboard metrics
   const dashboardMetrics = computed(() => {
-    const queries = metricQueries.value;
     return dashboardMetricsConfig.map((config, index) => {
-      const query = queries[index];
+      const query = metricQueries[index];
+      if (!query) {
+        return {
+          id: config.id,
+          title: config.title,
+          value: 0,
+          formatType: config.formatType || "text" as const,
+          description: config.description,
+        };
+      }
+
       const metric: DashboardMetric = {
         id: config.id,
         title: config.title,
@@ -36,7 +42,15 @@ export function useDashboardData() {
         description: config.description,
       };
 
-      if (query.data?.value && query.data.value.message === "success") {
+      // Debug logging - check what the API is returning
+      if (query.data?.value) {
+        console.log(`API Response for ${config.id}:`, query.data.value);
+      }
+      if (query.error?.value) {
+        console.error(`API Error for ${config.id}:`, query.error.value);
+      }
+
+      if (query.data?.value) {
         const apiData = query.data.value;
         const dataProperty = config.dataProperty;
         const valueProperty = config.valueProperty || "count";
@@ -95,20 +109,22 @@ export function useDashboardData() {
 
   // Loading and error states
   const isLoading = computed(() =>
-    metricQueries.value.some((query) => query.isLoading.value),
+    metricQueries.some((query) => query?.isLoading.value ?? false),
   );
 
   const hasError = computed(() =>
-    metricQueries.value.some((query) => query.isError.value),
+    metricQueries.some((query) => query?.isError.value ?? false),
   );
 
   const errors = computed(() =>
-    metricQueries.value.map((query) => query.error.value).filter(Boolean),
+    metricQueries
+      .map((query) => query?.error.value)
+      .filter(Boolean),
   );
 
   // Refetch all metrics
   const refetchAll = () => {
-    metricQueries.value.forEach((query) => query.refetch());
+    metricQueries.forEach((query) => query?.refetch?.());
   };
 
   return {

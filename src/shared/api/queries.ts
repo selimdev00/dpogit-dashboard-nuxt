@@ -22,10 +22,14 @@ export function useMetricQuery(
   const paramsRef = isRef(params) ? params : ref(params);
 
   return useQuery({
-    queryKey: ["metric", keyRef, paramsRef] as const,
+    queryKey: computed(() => [
+      "metric",
+      unref(keyRef),
+      JSON.stringify(unref(paramsRef))
+    ]),
     queryFn: () => apiClient.fetchMetric(unref(keyRef), unref(paramsRef)),
-    enabled: options.enabled ?? true, // Only run on client
-    staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
+    enabled: (options.enabled ?? true) && process.client, // Only run on client
+    staleTime: options.staleTime ?? 30 * 1000, // 30 seconds for development
     refetchInterval: options.refetchInterval,
   });
 }
@@ -37,13 +41,20 @@ export function useMultipleMetrics(
     | Array<{ key: MetricKey; params?: ApiQueryParams }>,
   options: UseMetricQueryOptions = {},
 ) {
-  const metricsRef = isRef(metrics) ? metrics : ref(metrics);
+  const metricsArray = unref(metrics);
 
-  return computed(() => {
-    return unref(metricsRef).map(({ key, params = {} }) =>
-      useMetricQuery(key, params, options),
-    );
-  });
+  // Ensure we have an array before calling map
+  if (!Array.isArray(metricsArray)) {
+    console.warn('useMultipleMetrics: metrics is not an array', metrics);
+    return ref([]);
+  }
+
+  // Create all queries immediately during setup
+  const queries = metricsArray.map(({ key, params = {} }) =>
+    useMetricQuery(key, params, options),
+  );
+
+  return ref(queries);
 }
 
 // Query for departments
