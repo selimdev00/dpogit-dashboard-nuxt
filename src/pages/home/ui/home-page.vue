@@ -55,55 +55,118 @@ const circleMetrics = computed(() => {
     "rgba(24, 160, 251, 1)",   // Light Blue
   ];
 
-  const baseMetrics = [
-    {
-      id: "leads",
-      label: "Лиды, шт",
-      totalValue: 754,
-      formatType: "number" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Холодные", value: 300, percentage: 35, color: colors[0] },
-        { name: "Теплые", value: 250, percentage: 30, color: colors[1] },
-        { name: "Горячие", value: 204, percentage: 25, color: colors[2] },
-      ],
-    },
-    {
-      id: "calls",
-      label: "Звонки, шт",
-      totalValue: 754,
-      formatType: "number" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Исходящие", value: 450, percentage: 60, color: colors[0] },
-        { name: "Входящие", value: 304, percentage: 40, color: colors[1] },
-      ],
-    },
-    {
-      id: "sales",
-      label: "Продажи, шт",
-      totalValue: 754,
-      formatType: "number" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Новые", value: 400, percentage: 53, color: colors[0] },
-        { name: "Повторные", value: 354, percentage: 47, color: colors[1] },
-      ],
-    },
-    {
-      id: "contracts",
-      label: "Сумма договоров, руб",
-      totalValue: 754000,
-      formatType: "currency" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Крупные", value: 400000, percentage: 55, color: colors[0] },
-        { name: "Средние", value: 250000, percentage: 30, color: colors[1] },
-        { name: "Мелкие", value: 104000, percentage: 15, color: colors[2] },
-      ],
-    },
-  ];
+  if (!dashboardMetrics.value) {
+    return [];
+  }
 
-  return baseMetrics;
+  // Find metrics by ID from dashboard data
+  const getMetric = (id: string) => dashboardMetrics.value?.find(m => m.id === id);
+
+  // Invoice metrics
+  const invoiceCount = getMetric('invoices_count');
+  const invoiceTotal = getMetric('invoices_total');
+  const invoicePaidCount = getMetric('invoices_paid_count');
+  const invoicePaidTotal = getMetric('invoices_paid_total');
+
+  // Call metrics
+  const incomingCalls = getMetric('incoming_calls');
+  const outcomingCalls = getMetric('outcoming_calls');
+
+  const metrics = [];
+
+  // Invoices Count Circle (count + paid_count)
+  if (invoiceCount && invoicePaidCount) {
+    const totalCount = (invoiceCount.value || 0) + (invoicePaidCount.value || 0);
+    const paidValue = invoicePaidCount.value || 0;
+    const unpaidValue = (invoiceCount.value || 0);
+
+    if (totalCount > 0) {
+      metrics.push({
+        id: "invoices_count",
+        label: "Счета, шт",
+        totalValue: totalCount,
+        formatType: "number" as const,
+        showDetails: true,
+        valueGroups: [
+          {
+            name: "Неоплаченные",
+            value: unpaidValue,
+            percentage: Math.round((unpaidValue / totalCount) * 100),
+            color: colors[0]
+          },
+          {
+            name: "Оплаченные",
+            value: paidValue,
+            percentage: Math.round((paidValue / totalCount) * 100),
+            color: colors[1]
+          },
+        ],
+      });
+    }
+  }
+
+  // Invoices Total Circle (total + paid_total)
+  if (invoiceTotal && invoicePaidTotal) {
+    const totalAmount = (invoiceTotal.value || 0) + (invoicePaidTotal.value || 0);
+    const paidAmount = invoicePaidTotal.value || 0;
+    const unpaidAmount = (invoiceTotal.value || 0);
+
+    if (totalAmount > 0) {
+      metrics.push({
+        id: "invoices_total",
+        label: "Сумма счетов, руб",
+        totalValue: totalAmount,
+        formatType: "currency" as const,
+        showDetails: true,
+        valueGroups: [
+          {
+            name: "Неоплаченные",
+            value: unpaidAmount,
+            percentage: Math.round((unpaidAmount / totalAmount) * 100),
+            color: colors[0]
+          },
+          {
+            name: "Оплаченные",
+            value: paidAmount,
+            percentage: Math.round((paidAmount / totalAmount) * 100),
+            color: colors[1]
+          },
+        ],
+      });
+    }
+  }
+
+  // Calls Circle (incoming + outgoing)
+  if (incomingCalls && outcomingCalls) {
+    const totalCalls = (incomingCalls.value || 0) + (outcomingCalls.value || 0);
+    const incomingValue = incomingCalls.value || 0;
+    const outcomingValue = outcomingCalls.value || 0;
+
+    if (totalCalls > 0) {
+      metrics.push({
+        id: "calls",
+        label: "Звонки, шт",
+        totalValue: totalCalls,
+        formatType: "number" as const,
+        showDetails: true,
+        valueGroups: [
+          {
+            name: "Входящие",
+            value: incomingValue,
+            percentage: Math.round((incomingValue / totalCalls) * 100),
+            color: colors[0]
+          },
+          {
+            name: "Исходящие",
+            value: outcomingValue,
+            percentage: Math.round((outcomingValue / totalCalls) * 100),
+            color: colors[1]
+          },
+        ],
+      });
+    }
+  }
+
+  return metrics;
 });
 </script>

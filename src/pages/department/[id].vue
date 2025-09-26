@@ -107,54 +107,119 @@ const circleMetrics = computed(() => {
     "rgba(24, 160, 251, 1)", // Light Blue
   ];
 
-  return [
-    {
-      id: "department-leads",
-      label: `Лиды отдела: ${departmentName.value || "Загрузка..."}`,
-      totalValue: 425,
-      formatType: "number" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Холодные", value: 150, percentage: 35, color: colors[0] },
-        { name: "Теплые", value: 128, percentage: 30, color: colors[1] },
-        { name: "Горячие", value: 147, percentage: 35, color: colors[2] },
-      ],
-    },
-    {
-      id: "department-calls",
-      label: "Звонки отдела",
-      totalValue: 320,
-      formatType: "number" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Исходящие", value: 192, percentage: 60, color: colors[0] },
-        { name: "Входящие", value: 128, percentage: 40, color: colors[1] },
-      ],
-    },
-    {
-      id: "department-sales",
-      label: "Продажи отдела",
-      totalValue: 280,
-      formatType: "number" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Новые", value: 168, percentage: 60, color: colors[0] },
-        { name: "Повторные", value: 112, percentage: 40, color: colors[1] },
-      ],
-    },
-    {
-      id: "department-contracts",
-      label: "Договоры отдела",
-      totalValue: 2400000,
-      formatType: "currency" as const,
-      showDetails: true,
-      valueGroups: [
-        { name: "Крупные", value: 1200000, percentage: 50, color: colors[0] },
-        { name: "Средние", value: 720000, percentage: 30, color: colors[1] },
-        { name: "Мелкие", value: 480000, percentage: 20, color: colors[2] },
-      ],
-    },
-  ];
+  if (!dashboardMetrics.value) {
+    return [];
+  }
+
+  // Find metrics by ID from dashboard data
+  const getMetric = (id: string) => dashboardMetrics.value?.find(m => m.id === id);
+
+  // Invoice metrics
+  const invoiceCount = getMetric('invoices_count');
+  const invoiceTotal = getMetric('invoices_total');
+  const invoicePaidCount = getMetric('invoices_paid_count');
+  const invoicePaidTotal = getMetric('invoices_paid_total');
+
+  // Call metrics
+  const incomingCalls = getMetric('incoming_calls');
+  const outcomingCalls = getMetric('outcoming_calls');
+
+  const metrics = [];
+
+  // Invoices Count Circle (count + paid_count)
+  if (invoiceCount && invoicePaidCount) {
+    const totalCount = (invoiceCount.value || 0) + (invoicePaidCount.value || 0);
+    const paidValue = invoicePaidCount.value || 0;
+    const unpaidValue = (invoiceCount.value || 0);
+
+    if (totalCount > 0) {
+      metrics.push({
+        id: "department_invoices_count",
+        label: `Счета отдела: ${departmentName.value || "Загрузка..."}`,
+        totalValue: totalCount,
+        formatType: "number" as const,
+        showDetails: true,
+        valueGroups: [
+          {
+            name: "Неоплаченные",
+            value: unpaidValue,
+            percentage: Math.round((unpaidValue / totalCount) * 100),
+            color: colors[0]
+          },
+          {
+            name: "Оплаченные",
+            value: paidValue,
+            percentage: Math.round((paidValue / totalCount) * 100),
+            color: colors[1]
+          },
+        ],
+      });
+    }
+  }
+
+  // Invoices Total Circle (total + paid_total)
+  if (invoiceTotal && invoicePaidTotal) {
+    const totalAmount = (invoiceTotal.value || 0) + (invoicePaidTotal.value || 0);
+    const paidAmount = invoicePaidTotal.value || 0;
+    const unpaidAmount = (invoiceTotal.value || 0);
+
+    if (totalAmount > 0) {
+      metrics.push({
+        id: "department_invoices_total",
+        label: "Сумма счетов отдела, руб",
+        totalValue: totalAmount,
+        formatType: "currency" as const,
+        showDetails: true,
+        valueGroups: [
+          {
+            name: "Неоплаченные",
+            value: unpaidAmount,
+            percentage: Math.round((unpaidAmount / totalAmount) * 100),
+            color: colors[0]
+          },
+          {
+            name: "Оплаченные",
+            value: paidAmount,
+            percentage: Math.round((paidAmount / totalAmount) * 100),
+            color: colors[1]
+          },
+        ],
+      });
+    }
+  }
+
+  // Calls Circle (incoming + outgoing)
+  if (incomingCalls && outcomingCalls) {
+    const totalCalls = (incomingCalls.value || 0) + (outcomingCalls.value || 0);
+    const incomingValue = incomingCalls.value || 0;
+    const outcomingValue = outcomingCalls.value || 0;
+
+    if (totalCalls > 0) {
+      metrics.push({
+        id: "department_calls",
+        label: "Звонки отдела",
+        totalValue: totalCalls,
+        formatType: "number" as const,
+        showDetails: true,
+        valueGroups: [
+          {
+            name: "Входящие",
+            value: incomingValue,
+            percentage: Math.round((incomingValue / totalCalls) * 100),
+            color: colors[0]
+          },
+          {
+            name: "Исходящие",
+            value: outcomingValue,
+            percentage: Math.round((outcomingValue / totalCalls) * 100),
+            color: colors[1]
+          },
+        ],
+      });
+    }
+  }
+
+  return metrics;
 });
 
 // Mock employee metrics for now - in real app this would come from API with departmentId filter
