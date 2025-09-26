@@ -16,18 +16,32 @@
         />
       </div>
 
-      <!-- Navigation -->
-      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.path"
-          :to="item.path"
-          class="transition-colors hover:text-foreground/80 text-foreground/60"
-          active-class="text-foreground"
-        >
-          {{ item.label }}
-        </NuxtLink>
-      </nav>
+      <!-- Navigation and User Menu -->
+      <div class="flex items-center space-x-4">
+        <!-- Navigation -->
+        <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <NuxtLink
+            v-for="item in navItems"
+            :key="item.path"
+            :to="item.path"
+            class="transition-colors hover:text-foreground/80 text-foreground/60"
+            active-class="text-foreground"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </nav>
+
+        <!-- User Menu -->
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-muted-foreground">{{ authStore.user?.name }}</span>
+          <button
+            @click="handleLogout"
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+          >
+            Выйти
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 </template>
@@ -36,6 +50,7 @@
 import { Logo } from "@/shared/ui/logo";
 import { DatePicker } from "@/shared/ui/datepicker";
 import { useDashboardStore, type DateRange } from "@/shared/stores/dashboard";
+import { useAuthStore } from "@/shared/stores/auth";
 
 interface NavItem {
   path: string;
@@ -43,10 +58,15 @@ interface NavItem {
 }
 
 const dashboardStore = useDashboardStore();
+const authStore = useAuthStore();
 
 const handleDateChange = (value: DateRange) => {
   dashboardStore.setDateRange(value);
   console.log("Date range changed:", value);
+};
+
+const handleLogout = () => {
+  authStore.logout();
 };
 
 const navItems: NavItem[] = [
