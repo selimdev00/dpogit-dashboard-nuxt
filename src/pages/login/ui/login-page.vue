@@ -2,8 +2,8 @@
 import { LoginForm, TestUsersInfo } from "@/features/auth";
 
 definePageMeta({
-  layout: 'guest',
-  middleware: 'guest',
+  layout: "guest",
+  middleware: "guest",
 });
 </script>
 
@@ -21,6 +21,6 @@ definePageMeta({
     <LoginForm />
 
     <!-- Test Users Info -->
-    <TestUsersInfo />
+    <!--    <TestUsersInfo />-->
   </div>
 </template>
