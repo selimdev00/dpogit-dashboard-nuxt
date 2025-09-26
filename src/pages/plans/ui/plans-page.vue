@@ -11,7 +11,7 @@
 
           <Select v-model="selectedDepartmentId" @change="onDepartmentChange">
             <SelectTrigger>
-              <SelectValue placeholder="Select a fruit" />
+              <SelectValue placeholder="Выберите отдел" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
