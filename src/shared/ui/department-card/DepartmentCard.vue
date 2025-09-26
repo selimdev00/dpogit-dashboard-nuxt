@@ -137,24 +137,12 @@ const isLoading = computed(() => {
   const fetching = invoicesFetching.value || callsFetching.value;
   const combinedState = loading || fetching;
 
-  console.log(`Department ${props.id} states:`, {
-    invoicesLoading: invoicesLoading.value,
-    callsLoading: callsLoading.value,
-    invoicesFetching: invoicesFetching.value,
-    callsFetching: callsFetching.value,
-    combinedLoading: combinedState,
-    dateRange: dashboardStore.selectedDateRange
-  });
-
   return combinedState;
 });
 
 // Process the data using dashboard configuration
 const departmentMetrics = computed(() => {
   const metrics: DashboardMetric[] = [];
-
-  console.log(callsData.value);
-  console.log(invoicesData.value);
 
   // Process each config that matches our fetched data
   dashboardMetricsConfig.forEach((config) => {
