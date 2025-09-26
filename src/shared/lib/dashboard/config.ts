@@ -24,8 +24,18 @@ export interface DashboardMetricConfig {
 // Configuration for all dashboard metrics
 export const dashboardMetricsConfig: DashboardMetricConfig[] = [
   {
-    id: "invoices",
-    title: "Сумма выставленных счетов ",
+    id: "invoices_count",
+    title: "Количество выставленных счетов",
+    apiKey: "invoices",
+    formatType: "count",
+    dataProperty: "invoices",
+    valueProperty: "count",
+    progressProperty: "assumptionPercent",
+    planProperty: "plan",
+  },
+  {
+    id: "invoices_total",
+    title: "Сумма выставленных счетов",
     apiKey: "invoices",
     apiParams: {
       by: "currency",
@@ -37,11 +47,38 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     planProperty: "plan",
   },
   {
-    id: "calls",
-    title: "Звонки исх/вх",
-    apiKey: "calls",
+    id: "invoices_paid_count",
+    title: "Количество оплаченных счетов",
+    apiKey: "invoices",
+    apiParams: {
+      is_paid: 1,
+    },
+    formatType: "count",
+    dataProperty: "invoices",
+    valueProperty: "count",
+    progressProperty: "assumptionPercent",
+    planProperty: "plan",
+  },
+  {
+    id: "invoices_paid_total",
+    title: "Сумма оплаченных счетов",
+    apiKey: "invoices",
     apiParams: {
       by: "currency",
+      is_paid: 1,
+    },
+    formatType: "currency",
+    dataProperty: "invoices",
+    valueProperty: "count",
+    progressProperty: "assumptionPercent",
+    planProperty: "plan",
+  },
+  {
+    id: "incoming_calls",
+    title: "Входящие звонки",
+    apiKey: "calls",
+    apiParams: {
+      direction: "in",
     },
     formatType: "count",
     dataProperty: "calls",
@@ -49,4 +86,17 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     progressProperty: "assumptionPercent",
     planProperty: "plan",
   },
+    {
+        id: "outcoming_calls",
+        title: "Исходящие звонки",
+        apiKey: "calls",
+        apiParams: {
+            direction: "out",
+        },
+        formatType: "count",
+        dataProperty: "calls",
+        valueProperty: "count",
+        progressProperty: "assumptionPercent",
+        planProperty: "plan",
+    },
 ];
