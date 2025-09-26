@@ -1,0 +1,1 @@
+export { default as CircleMetric } from './CircleMetric.vue';

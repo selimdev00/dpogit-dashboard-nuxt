@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg bg-card text-card-foreground shadow-sm p-6">
+  <div class="rounded-lg bg-card text-card-foreground shadow-sm p-6 border">
     <div class="flex flex-col space-y-1.5 pb-2">
       <h3 class="text-sm font-medium text-muted-foreground">{{ title }}</h3>
     </div>

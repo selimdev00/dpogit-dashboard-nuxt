@@ -2,6 +2,7 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-foreground">Отделы</h2>
       <div v-if="isLoading" class="text-sm text-muted-foreground">
         Загрузка...
       </div>

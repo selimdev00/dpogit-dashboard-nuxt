@@ -7,8 +7,18 @@
           to="/"
           class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Назад к главной
         </NuxtLink>
@@ -18,7 +28,9 @@
             class="h-4 w-4 rounded-full"
             :style="{ backgroundColor: departmentColor }"
           ></div>
-          <h1 class="text-2xl font-bold text-foreground">{{ departmentName }}</h1>
+          <h1 class="text-2xl font-bold text-foreground">
+            {{ departmentName }}
+          </h1>
         </div>
       </div>
 
@@ -47,6 +59,13 @@
           :employee-metrics="employeeMetricsMap"
           :is-loading="!departments"
         />
+
+        <!-- Circle Metrics -->
+        <MetricsCircleGrid
+          :circle-metrics="circleMetrics"
+          :is-loading="isLoading"
+          :has-error="hasError"
+        />
       </div>
     </div>
   </div>
@@ -55,6 +74,7 @@
 <script setup lang="ts">
 import { DashboardGrid } from "@/widgets/dashboard";
 import { EmployersGrid } from "@/widgets/employers";
+import { MetricsCircleGrid } from "@/widgets/metrics-circle";
 import { useDashboardData } from "@/widgets/dashboard/model/useDashboardData";
 import { useDepartmentsQuery } from "@/shared/api";
 
@@ -68,7 +88,7 @@ const departmentId = computed(() => parseInt(route.params.id as string));
 // Get department info for header
 const { data: departments } = useDepartmentsQuery();
 const currentDepartment = computed(() =>
-  departments.value?.find(dept => dept.id === departmentId.value)
+  departments.value?.find((dept) => dept.id === departmentId.value),
 );
 
 const departmentName = computed(() => currentDepartment.value?.name);
@@ -77,6 +97,65 @@ const departmentColor = computed(() => currentDepartment.value?.color);
 // Get dashboard data with department filter
 const { dashboardMetrics, isLoading, hasError, errors } =
   useDashboardData(departmentId);
+
+// Circle metrics for department-specific data
+const circleMetrics = computed(() => {
+  // Consistent color palette
+  const colors = [
+    "rgba(0, 119, 247, 1)", // Blue
+    "rgba(151, 71, 255, 1)", // Purple
+    "rgba(24, 160, 251, 1)", // Light Blue
+  ];
+
+  return [
+    {
+      id: "department-leads",
+      label: `Лиды отдела: ${departmentName.value || "Загрузка..."}`,
+      totalValue: 425,
+      formatType: "number" as const,
+      showDetails: true,
+      valueGroups: [
+        { name: "Холодные", value: 150, percentage: 35, color: colors[0] },
+        { name: "Теплые", value: 128, percentage: 30, color: colors[1] },
+        { name: "Горячие", value: 147, percentage: 35, color: colors[2] },
+      ],
+    },
+    {
+      id: "department-calls",
+      label: "Звонки отдела",
+      totalValue: 320,
+      formatType: "number" as const,
+      showDetails: true,
+      valueGroups: [
+        { name: "Исходящие", value: 192, percentage: 60, color: colors[0] },
+        { name: "Входящие", value: 128, percentage: 40, color: colors[1] },
+      ],
+    },
+    {
+      id: "department-sales",
+      label: "Продажи отдела",
+      totalValue: 280,
+      formatType: "number" as const,
+      showDetails: true,
+      valueGroups: [
+        { name: "Новые", value: 168, percentage: 60, color: colors[0] },
+        { name: "Повторные", value: 112, percentage: 40, color: colors[1] },
+      ],
+    },
+    {
+      id: "department-contracts",
+      label: "Договоры отдела",
+      totalValue: 2400000,
+      formatType: "currency" as const,
+      showDetails: true,
+      valueGroups: [
+        { name: "Крупные", value: 1200000, percentage: 50, color: colors[0] },
+        { name: "Средние", value: 720000, percentage: 30, color: colors[1] },
+        { name: "Мелкие", value: 480000, percentage: 20, color: colors[2] },
+      ],
+    },
+  ];
+});
 
 // Mock employee metrics for now - in real app this would come from API with departmentId filter
 const employeeMetricsMap = computed(() => {
