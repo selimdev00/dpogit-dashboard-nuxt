@@ -1,0 +1,1 @@
+export { default as DepartmentGrid } from './ui/DepartmentGrid.vue';

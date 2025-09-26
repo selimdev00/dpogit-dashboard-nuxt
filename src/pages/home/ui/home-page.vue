@@ -16,14 +16,19 @@
         </ul>
       </div>
 
-      <!-- Dashboard Content -->
-      <DashboardGrid :metrics="dashboardMetrics" />
+      <div class="space-y-12"><!-- Dashboard Content -->
+        <DashboardGrid :metrics="dashboardMetrics"/>
+
+        <!-- Department Grid -->
+        <DepartmentGrid/>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { DashboardGrid } from "@/widgets/dashboard";
+import { DepartmentGrid } from "@/widgets/departments";
 import { useDashboardData } from "@/widgets/dashboard/model/useDashboardData";
 import { useDashboardStore } from "@/shared/stores/dashboard";
 
