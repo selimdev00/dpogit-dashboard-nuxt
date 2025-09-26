@@ -55,8 +55,8 @@ const navItems: NavItem[] = [
     label: "Главная",
   },
   {
-    path: "/departments",
-    label: "Отделы",
+    path: "/plans",
+    label: "Планы",
   },
 ];
 </script>

@@ -9,10 +9,10 @@ export default {
       component: () => import("@/pages/home").then((r) => r.HomePage),
     },
     {
-      name: "departments",
-      path: "/departments",
+      name: "plans",
+      path: "/plans",
       component: () =>
-        import("@/pages/departments").then((r) => r.DepartmentsPage),
+        import("@/pages/plans").then((r) => r.PlansPage),
     },
     {
       name: "department",
