@@ -86,17 +86,17 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     progressProperty: "assumptionPercent",
     planProperty: "plan",
   },
-    {
-        id: "outcoming_calls",
-        title: "Исходящие звонки",
-        apiKey: "calls",
-        apiParams: {
-            direction: "out",
-        },
-        formatType: "count",
-        dataProperty: "calls",
-        valueProperty: "count",
-        progressProperty: "assumptionPercent",
-        planProperty: "plan",
+  {
+    id: "outcoming_calls",
+    title: "Исходящие звонки",
+    apiKey: "calls",
+    apiParams: {
+      direction: "out",
     },
+    formatType: "count",
+    dataProperty: "calls",
+    valueProperty: "count",
+    progressProperty: "assumptionPercent",
+    planProperty: "plan",
+  },
 ];

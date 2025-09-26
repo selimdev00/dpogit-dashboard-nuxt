@@ -4,36 +4,54 @@
     <div class="flex justify-between items-center">
       <div class="text-muted-foreground">{{ label }}</div>
       <div class="font-medium">
-        {{ formatValue(current) }}
+        <template v-if="loading">
+          <div class="animate-pulse bg-muted rounded w-12 h-4"></div>
+        </template>
+        <template v-else>
+          {{ formatValueLocal(current) }}
+        </template>
       </div>
     </div>
 
     <!-- Progress Bar -->
-    <div class="w-full  bg-[#383941] rounded-full h-[2px]">
-      <div
-        :class="`${progressColor} h-full rounded-full transition-all duration-300`"
-        :style="{ width: `${progressPercentage}%` }"
-      ></div>
+    <div class="w-full bg-[#383941] rounded-full h-[2px]">
+      <template v-if="loading">
+        <div class="bg-muted h-full rounded-full animate-pulse w-1/2"></div>
+      </template>
+      <template v-else>
+        <div
+          :class="`${progressColor} h-full rounded-full transition-all duration-300`"
+          :style="{ width: `${progressPercentage}%` }"
+        ></div>
+      </template>
     </div>
 
     <!-- Remaining Caption -->
-    <div class="text-xs text-muted-foreground ">
-      {{ formatValue(current) }} / {{ formatValue(total) }}
-
+    <div class="text-xs text-muted-foreground">
+      <template v-if="loading">
+        <div class="animate-pulse bg-muted rounded w-16 h-3"></div>
+      </template>
+      <template v-else>
+        {{ formatValueLocal(current) }} / {{ formatValueLocal(total) }}
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { formatValue, type FormatType } from "@/shared/lib/formatters";
+
 interface MetricProgressProps {
   label: string;
   current: number;
   total: number;
-  type?: 'number' | 'currency';
+  type?: FormatType;
+  loading?: boolean;
 }
 
 const props = withDefaults(defineProps<MetricProgressProps>(), {
-  type: 'number',
+  type: "number",
+  loading: false,
 });
 
 const progressPercentage = computed((): number => {
@@ -45,11 +63,11 @@ const progressColor = computed((): string => {
   const percentage = progressPercentage.value;
 
   if (percentage < 33) {
-    return 'bg-danger'; // danger - low progress
+    return "bg-danger"; // danger - low progress
   } else if (percentage < 67) {
-    return 'bg-warning'; // warning - medium progress
+    return "bg-warning"; // warning - medium progress
   } else {
-    return 'bg-success'; // success - high progress
+    return "bg-success"; // success - high progress
   }
 });
 
@@ -57,16 +75,7 @@ const remaining = computed((): number => {
   return Math.max(0, props.total - props.current);
 });
 
-const formatValue = (value: number): string => {
-  if (props.type === 'currency') {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  }
-
-  return value.toString();
+const formatValueLocal = (value: number): string => {
+  return formatValue(value, props.type);
 };
 </script>

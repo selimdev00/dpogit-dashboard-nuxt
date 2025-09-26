@@ -128,12 +128,11 @@
         </div>
         <!-- Table Header -->
         <div
-          class="grid grid-cols-5 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
+          class="grid grid-cols-4 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
         >
           <div class="col-span-2">Сотрудник</div>
           <div class="text-center">Звонки, шт</div>
           <div class="text-center">Счета, шт</div>
-          <div class="text-center">Билеты, шт</div>
         </div>
 
         <!-- Employee Rows -->
@@ -141,7 +140,7 @@
           <div
             v-for="employee in selectedDepartment.employees"
             :key="employee.id"
-            class="grid grid-cols-5 gap-4 p-4 transition-colors hover:bg-muted/10"
+            class="grid grid-cols-4 gap-4 p-4 transition-colors hover:bg-muted/10"
           >
             <!-- Employee Info -->
             <div class="col-span-2 flex items-center gap-3">
@@ -191,16 +190,6 @@
                 :disabled="!authStore.canPlan"
                 class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                 @input="updateEmployeePlan(employee.id, 'invoices', $event)"
-              />
-            </div>
-            <div class="flex items-center justify-center">
-              <input
-                :value="getEmployeePlan(employee.id, 'sold_tickets')"
-                type="number"
-                min="0"
-                :disabled="!authStore.canPlan"
-                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                @input="updateEmployeePlan(employee.id, 'sold_tickets', $event)"
               />
             </div>
           </div>

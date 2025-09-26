@@ -12,6 +12,18 @@ export interface MetricData {
   assumptionPercent: number;
   need: number;
   prevCount: number;
+  moreThan3s: {
+    count: number;
+    percentage: number;
+  };
+  moreThan30s: {
+    count: number;
+    percentage: number;
+  };
+  moreThan90s: {
+    count: number;
+    percentage: number;
+  };
 }
 
 export interface MetricApiResponse extends ApiResponse {

@@ -41,7 +41,7 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
           id: config.id,
           title: config.title,
           value: 0,
-          formatType: config.formatType || "text" as const,
+          formatType: config.formatType || ("text" as const),
           description: config.description,
         };
       }
@@ -56,10 +56,10 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
 
       // Debug logging - check what the API is returning
       if (query.data?.value) {
-        console.log(`API Response for ${config.id}:`, query.data.value);
+        // console.log(`API Response for ${config.id}:`, query.data.value);
       }
       if (query.error?.value) {
-        console.error(`API Error for ${config.id}:`, query.error.value);
+        // console.error(`API Error for ${config.id}:`, query.error.value);
       }
 
       if (query.data?.value) {
@@ -129,9 +129,7 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
   );
 
   const errors = computed(() =>
-    metricQueries
-      .map((query) => query?.error.value)
-      .filter(Boolean),
+    metricQueries.map((query) => query?.error.value).filter(Boolean),
   );
 
   // Refetch all metrics
