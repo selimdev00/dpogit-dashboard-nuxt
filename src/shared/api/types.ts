@@ -28,6 +28,20 @@ export interface ApiQueryParams {
   is_paid?: 0 | 1;
 }
 
+export interface PlanData {
+  id: number;
+  department_id: number | null;
+  employee_id: number | null;
+  event_id: number | null;
+  ticket_id: number | null;
+  month: string;
+  calls: number;
+  invoices: number;
+  sold_tickets: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export type MetricKey = string;
 
 export interface Employee {

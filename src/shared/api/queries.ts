@@ -5,6 +5,7 @@ import type {
   ApiQueryParams,
   MetricKey,
   Department,
+  PlanData,
 } from "./types";
 
 export interface UseMetricQueryOptions {
@@ -66,6 +67,19 @@ export function useDepartmentsQuery(
     queryFn: () => apiClient.fetchDepartments(),
     enabled: (options.enabled ?? true) && process.client,
     staleTime: options.staleTime ?? 10 * 60 * 1000, // 10 minutes
+    refetchInterval: options.refetchInterval,
+  });
+}
+
+// Query for plans
+export function usePlansQuery(
+  options: UseMetricQueryOptions = {},
+): UseQueryReturnType<PlanData[], Error> {
+  return useQuery({
+    queryKey: ["plans"] as const,
+    queryFn: () => apiClient.fetchPlans(),
+    enabled: (options.enabled ?? true) && process.client,
+    staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
     refetchInterval: options.refetchInterval,
   });
 }

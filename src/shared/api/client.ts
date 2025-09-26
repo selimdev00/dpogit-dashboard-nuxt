@@ -3,6 +3,7 @@ import type {
   MetricApiResponse,
   MetricKey,
   Department,
+  PlanData,
 } from "./types";
 
 class ApiClient {
@@ -55,6 +56,25 @@ class ApiClient {
 
   async fetchDepartments(): Promise<Department[]> {
     const url = `${this.getBaseUrl()}/api/departments`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  async fetchPlans(): Promise<PlanData[]> {
+    const url = `${this.getBaseUrl()}/api/plans`;
 
     const response = await fetch(url, {
       method: "GET",

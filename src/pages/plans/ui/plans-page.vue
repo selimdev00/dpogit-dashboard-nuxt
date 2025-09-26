@@ -4,10 +4,10 @@
       <div
         class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
-        <h1 class="text-2xl font-bold text-foreground">Отделы</h1>
+        <h1 class="text-2xl font-bold text-foreground">Планы</h1>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button> Выставить план </Button>
+          <Button> Сохранить </Button>
 
           <Select v-model="selectedDepartmentId" @change="onDepartmentChange">
             <SelectTrigger>
@@ -50,14 +50,12 @@
       >
         <!-- Table Header -->
         <div
-          class="grid grid-cols-7 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
+          class="grid grid-cols-5 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
         >
           <div class="col-span-2">Сотрудник</div>
-          <div class="text-center">Лиды, шт</div>
-          <div class="text-center">Продажи, шт</div>
-          <div class="text-center">Сумма договоров, руб</div>
-          <div class="text-center">Маржа, руб</div>
-          <div class="text-center">КЗВ, шт</div>
+          <div class="text-center">Звонки, шт</div>
+          <div class="text-center">Счета, шт</div>
+          <div class="text-center">Билеты, шт</div>
         </div>
 
         <!-- Employee Rows -->
@@ -65,7 +63,7 @@
           <div
             v-for="employee in selectedDepartment.employees"
             :key="employee.id"
-            class="grid grid-cols-7 gap-4 p-4 transition-colors hover:bg-muted/10"
+            class="grid grid-cols-5 gap-4 p-4 transition-colors hover:bg-muted/10"
           >
             <!-- Employee Info -->
             <div class="col-span-2 flex items-center gap-3">
@@ -97,30 +95,32 @@
             </div>
 
             <!-- Metrics -->
-            <div
-              class="flex items-center justify-center text-sm text-muted-foreground"
-            >
-              0
+            <div class="flex items-center justify-center">
+              <input
+                :value="getEmployeePlan(employee.id, 'calls')"
+                type="number"
+                min="0"
+                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                @input="updateEmployeePlan(employee.id, 'calls', $event)"
+              />
             </div>
-            <div
-              class="flex items-center justify-center text-sm text-muted-foreground"
-            >
-              0
+            <div class="flex items-center justify-center">
+              <input
+                :value="getEmployeePlan(employee.id, 'invoices')"
+                type="number"
+                min="0"
+                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                @input="updateEmployeePlan(employee.id, 'invoices', $event)"
+              />
             </div>
-            <div
-              class="flex items-center justify-center text-sm text-muted-foreground"
-            >
-              0
-            </div>
-            <div
-              class="flex items-center justify-center text-sm text-muted-foreground"
-            >
-              0
-            </div>
-            <div
-              class="flex items-center justify-center text-sm text-muted-foreground"
-            >
-              0
+            <div class="flex items-center justify-center">
+              <input
+                :value="getEmployeePlan(employee.id, 'sold_tickets')"
+                type="number"
+                min="0"
+                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                @input="updateEmployeePlan(employee.id, 'sold_tickets', $event)"
+              />
             </div>
           </div>
         </div>
@@ -142,8 +142,8 @@
 </template>
 
 <script setup lang="ts">
-import { useDepartmentsQuery } from "@/shared/api";
-import type { Department } from "@/shared/api/types";
+import { useDepartmentsQuery, usePlansQuery } from "@/shared/api";
+import type { Department, PlanData } from "@/shared/api/types";
 import {
   Select,
   SelectContent,
@@ -160,6 +160,10 @@ definePageMeta({
 const selectedDepartmentId = ref<number | "">("");
 
 const { data, isLoading, error } = useDepartmentsQuery();
+const { data: plansData } = usePlansQuery();
+
+// Store for employee plans - structure: { employeeId: { metric: value } }
+const employeePlans = ref<Record<number, Record<string, number>>>({});
 
 const selectedDepartment = computed<Department | null>(() => {
   if (!data.value || !selectedDepartmentId.value) return null;
@@ -169,11 +173,50 @@ const selectedDepartment = computed<Department | null>(() => {
 });
 
 const getInitials = (name: string): string => {
+  if (!name) return name
   const parts = name.split(" ");
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
   return parts[0][0].toUpperCase();
+};
+
+// Get employee plan value from API data or local store
+const getEmployeePlan = (employeeId: number, metric: string): number => {
+  // First check if we have API data for this employee
+  if (plansData.value) {
+    const apiPlan = plansData.value.find(
+      plan => plan.employee_id === employeeId
+    );
+    if (apiPlan) {
+      switch (metric) {
+        case 'calls':
+          return apiPlan.calls;
+        case 'invoices':
+          return apiPlan.invoices;
+        case 'sold_tickets':
+          return apiPlan.sold_tickets;
+      }
+    }
+  }
+
+  // Fall back to local store or default 0
+  return employeePlans.value[employeeId]?.[metric] || 0;
+};
+
+// Update employee plan value
+const updateEmployeePlan = (
+  employeeId: number,
+  metric: string,
+  event: Event,
+) => {
+  const target = event.target as HTMLInputElement;
+  const value = parseInt(target.value) || 0;
+
+  if (!employeePlans.value[employeeId]) {
+    employeePlans.value[employeeId] = {};
+  }
+  employeePlans.value[employeeId][metric] = value;
 };
 
 const onDepartmentChange = () => {
