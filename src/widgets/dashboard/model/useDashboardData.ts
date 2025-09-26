@@ -7,15 +7,27 @@ import type { DashboardMetric } from "@/shared/lib/dashboard/types";
 import type { MetricData, MetricApiResponse } from "@/shared/api";
 import { useDashboardStore } from "@/shared/stores/dashboard";
 
-export function useDashboardData() {
+export function useDashboardData(departmentId?: Ref<number> | number) {
   const dashboardStore = useDashboardStore();
 
   // Create individual queries for each metric
   const metricQueries = dashboardMetricsConfig.map((config) => {
-    const params = computed(() => ({
-      ...config.apiParams,
-      ...dashboardStore.getApiParams,
-    }));
+    const params = computed(() => {
+      const baseParams = {
+        ...config.apiParams,
+        ...dashboardStore.getApiParams,
+      };
+
+      // Add department filter if provided
+      if (departmentId) {
+        const deptId = unref(departmentId);
+        if (deptId) {
+          baseParams.department_ids = [deptId];
+        }
+      }
+
+      return baseParams;
+    });
 
     return useMetricQuery(config.apiKey, params);
   });

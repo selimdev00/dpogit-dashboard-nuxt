@@ -14,5 +14,10 @@ export default {
       component: () =>
         import("@/pages/departments").then((r) => r.DepartmentsPage),
     },
+    {
+      name: "department",
+      path: "/department/:id",
+      component: () => import("@/pages/department/[id].vue"),
+    },
   ],
 } satisfies RouterConfig;

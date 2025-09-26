@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center">
       <div class="text-muted-foreground">{{ label }}</div>
       <div class="font-medium">
-        {{ formatValue(current) }} / {{ formatValue(total) }}
+        {{ formatValue(current) }}
       </div>
     </div>
 
@@ -17,8 +17,9 @@
     </div>
 
     <!-- Remaining Caption -->
-    <div class="text-xs text-muted-foreground text-right">
-      Осталось: {{ formatValue(remaining) }}
+    <div class="text-xs text-muted-foreground ">
+      {{ formatValue(current) }} / {{ formatValue(total) }}
+
     </div>
   </div>
 </template>

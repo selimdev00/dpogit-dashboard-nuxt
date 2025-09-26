@@ -1,5 +1,8 @@
 <template>
-  <div class="rounded-lg border bg-card p-6 shadow-sm transition-colors hover:bg-muted/10">
+  <NuxtLink
+    :to="`/department/${id}`"
+    class="block rounded-lg border bg-card p-6 shadow-sm transition-all hover:bg-muted/10 hover:shadow-md cursor-pointer"
+  >
     <!-- Department Header -->
     <div class="mb-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -79,7 +82,7 @@
         type="currency"
       />
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
