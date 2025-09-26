@@ -235,15 +235,15 @@ const isOpen = ref(false);
 
 // State
 const selectedPeriod = ref("month");
-const selectedYear = ref(2025);
-const selectedMonth = ref(9); // September
-const selectedQuarter = ref(1);
+const selectedYear = ref(new Date().getFullYear());
+const selectedMonth = ref(new Date().getMonth() + 1); // Current month (1-indexed)
+const selectedQuarter = ref(Math.ceil((new Date().getMonth() + 1) / 3)); // Current quarter
 
-// Period calendar state
-const currentMonth = ref(8); // September (0-indexed)
-const currentYear = ref(2025);
-const displayMonth = ref(9); // October (0-indexed)
-const displayYear = ref(2025);
+// Period calendar state - start from current month for period selection
+const currentMonth = ref(new Date().getMonth()); // Current month (0-indexed)
+const currentYear = ref(new Date().getFullYear());
+const displayMonth = ref(new Date().getMonth()); // Current month (0-indexed)
+const displayYear = ref(new Date().getFullYear());
 const startDate = ref<Date | null>(null);
 const endDate = ref<Date | null>(null);
 
@@ -255,21 +255,60 @@ const periods = [
   { value: "period", label: "Период" },
 ];
 
-const years = Array.from({ length: 8 }, (_, i) => 2025 + i);
+// Generate years from 2023 to current year (inclusive)
+const currentYearNumber = new Date().getFullYear();
+const years = Array.from({ length: currentYearNumber - 2022 }, (_, i) => 2023 + i);
 
-const months = [
-  { value: 9, label: "сентябрь" },
-  { value: 10, label: "октябрь" },
-  { value: 11, label: "ноябрь" },
-  { value: 12, label: "декабрь" },
-];
+// Generate all months from January to current month (if current year selected)
+const months = computed(() => {
+  const allMonths = [
+    { value: 1, label: "январь" },
+    { value: 2, label: "февраль" },
+    { value: 3, label: "март" },
+    { value: 4, label: "апрель" },
+    { value: 5, label: "май" },
+    { value: 6, label: "июнь" },
+    { value: 7, label: "июль" },
+    { value: 8, label: "август" },
+    { value: 9, label: "сентябрь" },
+    { value: 10, label: "октябрь" },
+    { value: 11, label: "ноябрь" },
+    { value: 12, label: "декабрь" },
+  ];
 
-const quarters = [
-  { value: 1, label: "Q1" },
-  { value: 2, label: "Q2" },
-  { value: 3, label: "Q3" },
-  { value: 4, label: "Q4" },
-];
+  const currentYearValue = new Date().getFullYear();
+  const currentMonthValue = new Date().getMonth() + 1; // 1-indexed
+
+  // If current year is selected, only show months up to current month
+  if (selectedYear.value === currentYearValue) {
+    return allMonths.filter(month => month.value <= currentMonthValue);
+  }
+
+  // For past years, show all months
+  return allMonths;
+});
+
+// Generate quarters up to current quarter (if current year selected)
+const quarters = computed(() => {
+  const allQuarters = [
+    { value: 1, label: "Q1" },
+    { value: 2, label: "Q2" },
+    { value: 3, label: "Q3" },
+    { value: 4, label: "Q4" },
+  ];
+
+  const currentYearValue = new Date().getFullYear();
+  const currentMonthValue = new Date().getMonth() + 1; // 1-indexed
+  const currentQuarterValue = Math.ceil(currentMonthValue / 3);
+
+  // If current year is selected, only show quarters up to current quarter
+  if (selectedYear.value === currentYearValue) {
+    return allQuarters.filter(quarter => quarter.value <= currentQuarterValue);
+  }
+
+  // For past years, show all quarters
+  return allQuarters;
+});
 
 const weekDays = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 
@@ -292,7 +331,7 @@ const monthNames = [
 const formatSelectedDate = computed(() => {
   if (selectedPeriod.value === "month") {
     const monthName =
-      months.find((m) => m.value === selectedMonth.value)?.label || "сентябрь";
+      months.value.find((m) => m.value === selectedMonth.value)?.label || "текущий месяц";
     return `${monthName} ${selectedYear.value}`;
   } else if (selectedPeriod.value === "quarter") {
     return `Q${selectedQuarter.value} ${selectedYear.value}`;
@@ -368,6 +407,15 @@ const previousMonth = () => {
 };
 
 const nextMonth = () => {
+  const today = new Date();
+  const currentDate = new Date(currentYear.value, currentMonth.value);
+
+  // Don't allow navigating to future months
+  if (currentDate.getFullYear() >= today.getFullYear() &&
+      currentDate.getMonth() >= today.getMonth()) {
+    return;
+  }
+
   if (currentMonth.value === 11) {
     currentMonth.value = 0;
     currentYear.value++;
