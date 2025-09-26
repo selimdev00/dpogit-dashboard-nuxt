@@ -3,7 +3,7 @@ export interface User {
   email: string;
   name: string;
   department: string;
-  departmentIds: string[];
+  departmentIds: boolean | number[];
   canPlan: boolean;
 }
 

@@ -80,6 +80,7 @@ import { useDepartmentsQuery } from "@/shared/api";
 
 definePageMeta({
   layout: "default",
+  middleware: "can-access-department",
 });
 
 const route = useRoute();

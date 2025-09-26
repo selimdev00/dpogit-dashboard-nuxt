@@ -251,9 +251,18 @@ const authStore = useAuthStore();
 // Create a reactive reference to the current month
 const currentMonth = computed(() => dashboardStore.getCurrentMonth);
 
-const { data, isLoading, error } = useDepartmentsQuery();
+const { data: allDepartments, isLoading, error } = useDepartmentsQuery();
 const { data: plansData, isLoading: plansLoading, error: plansError } = usePlansQuery(currentMonth);
 const savePlansMutation = useSavePlansMutation();
+
+// Filter departments based on user's departmentIds access
+const data = computed(() => {
+  if (!allDepartments.value) return null;
+
+  return allDepartments.value.filter(department =>
+    authStore.canAccessDepartment(department.id)
+  );
+});
 
 // Store for tracking changes - structure: { employeeId: { metric: value } }
 const changedPlans = ref<Record<number, Record<string, number>>>({});

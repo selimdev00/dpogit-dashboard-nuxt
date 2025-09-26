@@ -58,6 +58,7 @@
 import { DepartmentCard } from "@/shared/ui/department-card";
 import { useDepartmentsQuery } from "@/shared/api";
 import type { Department } from "@/shared/api/types";
+import { useAuthStore } from "@/shared/stores/auth";
 
 interface DepartmentMetrics {
   leads: number;
@@ -76,7 +77,17 @@ interface DepartmentGridProps {
 
 const props = defineProps<DepartmentGridProps>();
 
-const { data: departments, isLoading, error } = useDepartmentsQuery();
+const authStore = useAuthStore();
+const { data: allDepartments, isLoading, error } = useDepartmentsQuery();
+
+// Filter departments based on user's departmentIds access
+const departments = computed(() => {
+  if (!allDepartments.value) return null;
+
+  return allDepartments.value.filter(department =>
+    authStore.canAccessDepartment(department.id)
+  );
+});
 
 const hasError = computed(() => !!error.value);
 
