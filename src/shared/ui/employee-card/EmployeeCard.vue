@@ -82,58 +82,64 @@ const getInitials = (name: string): string => {
   return parts[0][0].toUpperCase();
 };
 
-// Create reactive query parameters
-const queryParams = computed(() => ({
-  employee_ids: [props.id],
-  dateFrom: dashboardStore.selectedDateRange.dateFrom,
-  dateTo: dashboardStore.selectedDateRange.dateTo,
-}));
+// Generate unique queries from dashboard config
+const queryConfigs = computed(() => {
+  const uniqueQueries = new Map();
 
-// Fetch invoices and calls data separately for this employee
-const {
-  data: invoicesData,
-  isLoading: invoicesLoading,
-  isFetching: invoicesFetching,
-  error: invoicesError,
-} = useMetricQuery("invoices", queryParams, {
-  staleTime: 0, // Always refetch
-  refetchInterval: false,
+  dashboardMetricsConfig.forEach((config) => {
+    const apiParams = config.apiParams || {};
+    const queryKey = `${config.apiKey}_${JSON.stringify(apiParams)}`;
+
+    if (!uniqueQueries.has(queryKey)) {
+      uniqueQueries.set(queryKey, {
+        queryKey,
+        apiKey: config.apiKey,
+        apiParams,
+        params: {
+          employee_ids: [props.id],
+          dateFrom: dashboardStore.selectedDateRange.dateFrom,
+          dateTo: dashboardStore.selectedDateRange.dateTo,
+          ...apiParams,
+        },
+      });
+    }
+  });
+
+  return Array.from(uniqueQueries.values());
 });
 
-const {
-  data: callsData,
-  isLoading: callsLoading,
-  isFetching: callsFetching,
-  error: callsError,
-} = useMetricQuery("calls", queryParams, {
-  staleTime: 0, // Always refetch
-  refetchInterval: false,
+// Create queries dynamically based on config
+const queries = computed(() => {
+  return queryConfigs.value.map((config) => {
+    const queryParams = computed(() => config.params);
+
+    return {
+      ...useMetricQuery(config.apiKey, queryParams, {
+        staleTime: 0,
+        refetchInterval: false,
+      }),
+      queryKey: config.queryKey,
+    };
+  });
 });
 
-// Combined loading state (use isFetching for refetches, isLoading for initial load)
+// Combined loading state
 const isLoading = computed(() => {
-  const loading = invoicesLoading.value || callsLoading.value;
-  const fetching = invoicesFetching.value || callsFetching.value;
-  const combinedState = loading || fetching;
-
-  return combinedState;
+  return queries.value.some(query => query.isLoading.value || query.isFetching.value);
 });
 
 // Process the data using dashboard configuration
 const employeeMetrics = computed(() => {
   const metrics: DashboardMetric[] = [];
 
-  // Process each config that matches our fetched data
+  // Process each config
   dashboardMetricsConfig.forEach((config) => {
-    let apiData = null;
+    // Find the matching query for this config
+    const configQueryKey = `${config.apiKey}_${JSON.stringify(config.apiParams || {})}`;
+    const matchingQuery = queries.value.find(query => query.queryKey === configQueryKey);
 
-    if (config.apiKey === "invoices" && invoicesData.value) {
-      apiData = invoicesData.value;
-    } else if (config.apiKey === "calls" && callsData.value) {
-      apiData = callsData.value;
-    }
-
-    if (apiData) {
+    if (matchingQuery?.data?.value) {
+      const apiData = matchingQuery.data.value;
       const dataProperty = config.dataProperty;
       const valueProperty = config.valueProperty || "count";
       const progressProperty = config.progressProperty || "assumptionPercent";
@@ -169,47 +175,6 @@ const employeeMetrics = computed(() => {
       }
     }
   });
-
-  // Add call duration metrics if calls data is available
-  if (callsData.value) {
-    const callsResponse: MetricData = callsData.value.calls;
-
-    // Add moreThan3s metric
-    if (callsResponse.moreThan3s) {
-      metrics.push({
-        id: "calls_more_than_3s",
-        title: "Звонки > 3 сек",
-        value: Number(callsResponse.moreThan3s.count) || 0,
-        plan: 100, // Assuming 100% as target
-        formatType: "count",
-        progressValue: Number(callsResponse.moreThan3s.percentage) || 0,
-      });
-    }
-
-    // Add moreThan30s metric
-    if (callsResponse.moreThan30s) {
-      metrics.push({
-        id: "calls_more_than_30s",
-        title: "Звонки > 30 сек",
-        value: Number(callsResponse.moreThan30s.count) || 0,
-        plan: 100, // Assuming 100% as target
-        formatType: "count",
-        progressValue: Number(callsResponse.moreThan30s.percentage) || 0,
-      });
-    }
-
-    // Add moreThan90s metric
-    if (callsResponse.moreThan90s) {
-      metrics.push({
-        id: "calls_more_than_90s",
-        title: "Звонки > 90 сек",
-        value: Number(callsResponse.moreThan90s.count) || 0,
-        plan: 100, // Assuming 100% as target
-        formatType: "count",
-        progressValue: Number(callsResponse.moreThan90s.percentage) || 0,
-      });
-    }
-  }
 
   return metrics;
 });
