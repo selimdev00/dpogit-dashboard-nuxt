@@ -132,23 +132,21 @@ const queryConfigs = computed(() => {
 });
 
 // Create queries dynamically based on config
-const queries = computed(() => {
-  return queryConfigs.value.map((config) => {
-    const queryParams = computed(() => config.params);
+const queries = queryConfigs.value.map((config) => {
+  const queryParams = computed(() => config.params);
 
-    return {
-      ...useMetricQuery(config.apiKey, queryParams, {
-        staleTime: 0,
-        refetchInterval: false,
-      }),
-      queryKey: config.queryKey,
-    };
-  });
+  return {
+    ...useMetricQuery(config.apiKey, queryParams, {
+      staleTime: 0,
+      refetchInterval: false,
+    }),
+    queryKey: config.queryKey,
+  };
 });
 
 // Combined loading state
 const isLoading = computed(() => {
-  return queries.value.some(
+  return queries.some(
     (query) => query.isLoading.value || query.isFetching.value,
   );
 });
@@ -161,7 +159,7 @@ const departmentMetrics = computed(() => {
   dashboardMetricsConfig.forEach((config) => {
     // Find the matching query for this config
     const configQueryKey = `${config.apiKey}_${JSON.stringify(config.apiParams || {})}`;
-    const matchingQuery = queries.value.find(
+    const matchingQuery = queries.find(
       (query) => query.queryKey === configQueryKey,
     );
 
