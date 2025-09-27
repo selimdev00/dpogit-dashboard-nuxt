@@ -11,6 +11,7 @@ export interface DashboardMetric {
   description?: string;
   progressValue?: number;
   formatType?: FormatType;
+  additionalText?: string; // For displaying calculated values like average check
 }
 
 export interface DashboardData {

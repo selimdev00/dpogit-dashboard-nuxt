@@ -26,16 +26,23 @@
       </template>
     </div>
 
-    <!-- Remaining Caption (only if hasProgress) -->
-    <div v-if="hasProgress" class="text-xs text-muted-foreground">
-      <template v-if="loading">
-        <div class="animate-pulse bg-muted rounded w-16 h-3"></div>
-      </template>
-      <template v-else>
-        {{ formatValueLocal(current) }} / {{ formatValueLocal(total) }}
-      </template>
+    <div class="flex items-center mt-1">
+      <!-- Remaining Caption (only if hasProgress) -->
+      <div v-if="hasProgress" class="text-xs text-muted-foreground mr-auto">
+        <template v-if="loading">
+          <div class="animate-pulse bg-muted rounded w-16 h-3"></div>
+        </template>
+        <template v-else>
+          {{ formatValueLocal(current) }} / {{ formatValueLocal(total) }}
+        </template>
+      </div>
+      <div v-else class="h-3"></div>
+
+      <!-- Additional text (like average check) -->
+      <div v-if="additionalText" class="text-xs text-muted-foreground ml-auto">
+        {{ additionalText }}
+      </div>
     </div>
-    <div v-else class="h-3"></div>
   </div>
 </template>
 
@@ -48,6 +55,7 @@ interface MetricProgressProps {
   total?: number;
   type?: FormatType;
   loading?: boolean;
+  additionalText?: string;
 }
 
 const props = withDefaults(defineProps<MetricProgressProps>(), {

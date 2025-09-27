@@ -62,6 +62,7 @@
           "
           :type="metric.formatType"
           :loading="isLoading"
+          :additional-text="metric.additionalText"
         />
       </template>
     </div>
@@ -76,6 +77,7 @@ import { useDashboardStore } from "@/shared/stores/dashboard";
 import { dashboardMetricsConfig } from "@/shared/lib/dashboard/config";
 import type { DashboardMetric } from "@/shared/lib/dashboard/types";
 import type { MetricData } from "@/shared/api/types";
+import { formatValue } from "@/shared/lib/formatters";
 
 interface DepartmentCardProps {
   id: number;
@@ -194,6 +196,27 @@ const departmentMetrics = computed(() => {
           // Set progress percentage (only if there's a plan)
           const progressPercent = Number(rawProgress) || 0;
           metric.progressValue = Math.max(0, Math.min(100, progressPercent));
+        }
+
+        // Calculate average check for paid invoices total metric
+        if (config.id === "invoices_paid_total") {
+          // Find the paid invoices count from the same department
+          const paidCountQuery = queries.find(
+            (query) =>
+              query.queryKey === `invoices_${JSON.stringify({ is_paid: 1 })}`,
+          );
+
+          if (paidCountQuery?.data?.value) {
+            const paidCountData = paidCountQuery.data.value;
+            const paidCountMetricData = paidCountData.invoices;
+            const paidCount = paidCountMetricData?.count || 0;
+
+            let averageCheck = Number(metric.value) / paidCount;
+            if (isNaN(averageCheck)) {
+              averageCheck = 0;
+            }
+            metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
+          }
         }
 
         metrics.push(metric);

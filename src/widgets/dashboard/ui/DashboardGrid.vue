@@ -14,6 +14,7 @@
       :description="metric.description"
       :progress-value="metric.progressValue"
       :format-type="metric.formatType"
+      :additional-text="metric.additionalText"
     />
   </div>
 </template>

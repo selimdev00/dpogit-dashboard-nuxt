@@ -30,9 +30,20 @@
           :style="{ width: `${Math.min(progressValue, 100)}%` }"
         ></div>
       </div>
-      <div class="text-xs text-muted-foreground mt-1 text-right">
-        <span v-if="progressValue !== undefined">{{ progressValue }}%</span>
-        <div class="h-3" v-else></div>
+
+      <!-- Additional text (like average check) -->
+      <div class="flex items-center mt-2 mb-3">
+        <div
+          v-if="additionalText"
+          class="text-xs text-muted-foreground text-right mr-auto"
+        >
+          <span>{{ additionalText }}</span>
+        </div>
+
+        <div class="text-xs text-muted-foreground text-right ml-auto">
+          <span v-if="progressValue !== undefined">{{ progressValue }}%</span>
+          <div class="h-1" v-else></div>
+        </div>
       </div>
     </div>
 
@@ -100,6 +111,7 @@ interface MetricCardProps {
   description?: string;
   progressValue?: number;
   formatType?: FormatType;
+  additionalText?: string;
 }
 
 const props = withDefaults(defineProps<MetricCardProps>(), {

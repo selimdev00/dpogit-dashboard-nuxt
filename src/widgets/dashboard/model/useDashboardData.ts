@@ -6,6 +6,7 @@ import {
 import type { DashboardMetric } from "@/shared/lib/dashboard/types";
 import type { MetricData, MetricApiResponse } from "@/shared/api";
 import { useDashboardStore } from "@/shared/stores/dashboard";
+import { formatValue } from "@/shared/lib/formatters";
 
 export function useDashboardData(departmentId?: Ref<number> | number) {
   const dashboardStore = useDashboardStore();
@@ -86,6 +87,27 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
               progressProperty as keyof MetricData
             ] as number;
             metric.progressValue = Math.max(0, Math.min(100, progressPercent));
+          }
+
+          // Calculate average check for paid invoices total metric
+          if (config.id === "invoices_paid_total") {
+            // Find the paid invoices count metric
+            const paidCountConfig = dashboardMetricsConfig.find(c => c.id === "invoices_paid_count");
+            if (paidCountConfig) {
+              const paidCountIndex = dashboardMetricsConfig.indexOf(paidCountConfig);
+              const paidCountQuery = metricQueries[paidCountIndex];
+
+              if (paidCountQuery?.data?.value) {
+                const paidCountData = paidCountQuery.data.value;
+                const paidCountMetricData = paidCountData.invoices;
+                const paidCount = paidCountMetricData?.count || 0;
+
+                if (paidCount > 0) {
+                  const averageCheck = Number(metric.value) / paidCount;
+                  metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
+                }
+              }
+            }
           }
 
           // Calculate change compared to previous value
