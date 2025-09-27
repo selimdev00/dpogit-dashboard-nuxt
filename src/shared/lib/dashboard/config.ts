@@ -99,4 +99,18 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     progressProperty: "assumptionPercent",
     planProperty: false,
   },
+  {
+    id: "average_check",
+    title: "Ср. чек",
+    apiKey: "invoices", // Will use paid invoices data
+    apiParams: {
+      by: "currency",
+      is_paid: 1,
+    },
+    formatType: "currency",
+    dataProperty: "invoices",
+    valueProperty: "count", // This will be overridden with calculated value
+    progressProperty: "assumptionPercent",
+    planProperty: false,
+  },
 ];

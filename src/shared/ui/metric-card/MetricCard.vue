@@ -1,5 +1,7 @@
 <template>
-  <div class="rounded-lg bg-card text-card-foreground shadow-sm p-6 border">
+  <div
+    class="rounded-lg bg-card text-card-foreground shadow-sm p-6 border flex flex-col"
+  >
     <div class="flex flex-col space-y-1.5 pb-2">
       <h3 class="text-sm font-medium text-muted-foreground">{{ title }}</h3>
     </div>
@@ -47,7 +49,7 @@
       </div>
     </div>
 
-    <div v-if="showChange" class="flex items-center space-x-1">
+    <div v-if="showChange" class="flex items-center space-x-1 mt-auto">
       <svg
         v-if="changeType === 'increase'"
         class="h-4 w-4 text-success"

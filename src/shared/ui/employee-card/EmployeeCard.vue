@@ -86,11 +86,11 @@ const getInitials = (name: string): string => {
   return parts[0][0].toUpperCase();
 };
 
-// Generate unique queries from dashboard config
+// Generate unique queries from dashboard config (excluding average_check)
 const queryConfigs = computed(() => {
   const uniqueQueries = new Map();
 
-  dashboardMetricsConfig.forEach((config) => {
+  dashboardMetricsConfig.filter(config => config.id !== "average_check").forEach((config) => {
     const apiParams = config.apiParams || {};
     const queryKey = `${config.apiKey}_${JSON.stringify(apiParams)}`;
 
@@ -136,8 +136,8 @@ const isLoading = computed(() => {
 const employeeMetrics = computed(() => {
   const metrics: DashboardMetric[] = [];
 
-  // Process each config
-  dashboardMetricsConfig.forEach((config) => {
+  // Process each config (excluding average_check which is only for main dashboard)
+  dashboardMetricsConfig.filter(config => config.id !== "average_check").forEach((config) => {
     // Find the matching query for this config
     const configQueryKey = `${config.apiKey}_${JSON.stringify(config.apiParams || {})}`;
     const matchingQuery = queries.find(

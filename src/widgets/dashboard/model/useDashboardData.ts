@@ -92,9 +92,36 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
           // Calculate average check for paid invoices total metric
           if (config.id === "invoices_paid_total") {
             // Find the paid invoices count metric
-            const paidCountConfig = dashboardMetricsConfig.find(c => c.id === "invoices_paid_count");
+            const paidCountConfig = dashboardMetricsConfig.find(
+              (c) => c.id === "invoices_paid_count",
+            );
             if (paidCountConfig) {
-              const paidCountIndex = dashboardMetricsConfig.indexOf(paidCountConfig);
+              const paidCountIndex =
+                dashboardMetricsConfig.indexOf(paidCountConfig);
+              const paidCountQuery = metricQueries[paidCountIndex];
+
+              if (paidCountQuery?.data?.value) {
+                const paidCountData = paidCountQuery.data.value;
+                const paidCountMetricData = paidCountData.invoices;
+                const paidCount = paidCountMetricData?.count || 0;
+
+                // if (paidCount > 0) {
+                //   const averageCheck = Number(metric.value) / paidCount;
+                //   metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
+                // }
+              }
+            }
+          }
+
+          // Calculate average check metric standalone
+          if (config.id === "average_check") {
+            // Find the paid invoices count metric
+            const paidCountConfig = dashboardMetricsConfig.find(
+              (c) => c.id === "invoices_paid_count",
+            );
+            if (paidCountConfig) {
+              const paidCountIndex =
+                dashboardMetricsConfig.indexOf(paidCountConfig);
               const paidCountQuery = metricQueries[paidCountIndex];
 
               if (paidCountQuery?.data?.value) {
@@ -103,9 +130,14 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
                 const paidCount = paidCountMetricData?.count || 0;
 
                 if (paidCount > 0) {
-                  const averageCheck = Number(metric.value) / paidCount;
-                  metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
+                  const paidTotalValue = Number(metric.value) || 0;
+                  const averageCheck = paidTotalValue / paidCount;
+                  metric.value = averageCheck;
+                } else {
+                  metric.value = 0;
                 }
+              } else {
+                metric.value = 0;
               }
             }
           }
