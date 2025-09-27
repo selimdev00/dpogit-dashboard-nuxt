@@ -1,7 +1,9 @@
 <template>
   <div class="bg-background flex flex-col">
     <!-- Sticky Header -->
-    <div class="sticky top-16 z-10 bg-background border-b">
+    <div
+      class="sticky top-16 z-10 bg-background border-b backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div class="container mx-auto py-4">
         <div
           class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
@@ -52,8 +54,8 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="flex-1 overflow-hidden h-screen">
-      <div class="h-full overflow-y-auto">
+    <div class="flex-1 h-screen">
+      <div class="h-full">
         <div class="container mx-auto p-4">
           <!-- Loading State -->
           <div v-if="isLoading" class="flex items-center justify-center py-12">
@@ -144,7 +146,7 @@
             </div>
             <!-- Table Header -->
             <div
-              class="grid grid-cols-4 gap-4 border-b p-4 text-sm font-medium text-muted-foreground flex-shrink-0"
+              class="grid grid-cols-4 gap-4 border-b p-4 text-sm font-medium text-muted-foreground flex-shrink-0 sticky top-36 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10"
             >
               <div class="col-span-2">Сотрудник</div>
               <div class="text-center">Исходящие звонки</div>
@@ -153,7 +155,7 @@
 
             <!-- Scrollable Employee Rows -->
             <div class="flex-1 overflow-y-auto">
-              <div class="divide-y relative">
+              <div class="divide-y">
                 <div
                   v-for="employee in selectedDepartment.employees"
                   :key="employee.id"
@@ -212,41 +214,43 @@
                     />
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <!-- Totals Row -->
-                <div
-                  class="grid grid-cols-4 gap-4 p-4 bg-muted/5 border-t-2 border-muted sticky bottom-0"
-                >
-                  <!-- Total Label -->
-                  <div class="col-span-2 flex items-center">
-                    <div class="font-medium text-foreground">
-                      Итого по отделу:
-                    </div>
+            <!-- Sticky Totals Row -->
+            <div
+              class="flex-shrink-0 border-t-2 bg-background shadow-lg sticky bottom-0 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+            >
+              <div class="grid grid-cols-4 gap-4 p-4">
+                <!-- Total Label -->
+                <div class="col-span-2 flex items-center">
+                  <div class="font-medium text-foreground">
+                    Итого по отделу:
                   </div>
+                </div>
 
-                  <!-- Total Calls Input -->
-                  <div class="flex items-center justify-center">
-                    <input
-                      :value="totalCalls"
-                      type="number"
-                      min="0"
-                      :disabled="!authStore.canPlan"
-                      class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                      @input="updateTotalCalls"
-                    />
-                  </div>
+                <!-- Total Calls Input -->
+                <div class="flex items-center justify-center">
+                  <input
+                    :value="totalCalls"
+                    type="number"
+                    min="0"
+                    :disabled="!authStore.canPlan"
+                    class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    @input="updateTotalCalls"
+                  />
+                </div>
 
-                  <!-- Total Invoices Input -->
-                  <div class="flex items-center justify-center">
-                    <input
-                      :value="totalInvoices"
-                      type="number"
-                      min="0"
-                      :disabled="!authStore.canPlan"
-                      class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                      @input="updateTotalInvoices"
-                    />
-                  </div>
+                <!-- Total Invoices Input -->
+                <div class="flex items-center justify-center">
+                  <input
+                    :value="totalInvoices"
+                    type="number"
+                    min="0"
+                    :disabled="!authStore.canPlan"
+                    class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    @input="updateTotalInvoices"
+                  />
                 </div>
               </div>
             </div>
