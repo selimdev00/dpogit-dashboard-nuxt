@@ -62,7 +62,6 @@ const authStore = useAuthStore();
 
 const handleDateChange = (value: DateRange) => {
   dashboardStore.setDateRange(value);
-  console.log("Date range changed:", value);
 };
 
 const handleLogout = () => {

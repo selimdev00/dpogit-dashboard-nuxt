@@ -90,24 +90,26 @@ const getInitials = (name: string): string => {
 const queryConfigs = computed(() => {
   const uniqueQueries = new Map();
 
-  dashboardMetricsConfig.filter(config => config.id !== "average_check").forEach((config) => {
-    const apiParams = config.apiParams || {};
-    const queryKey = `${config.apiKey}_${JSON.stringify(apiParams)}`;
+  dashboardMetricsConfig
+    .filter((config) => config.id !== "average_check")
+    .forEach((config) => {
+      const apiParams = config.apiParams || {};
+      const queryKey = `${config.apiKey}_${JSON.stringify(apiParams)}`;
 
-    if (!uniqueQueries.has(queryKey)) {
-      uniqueQueries.set(queryKey, {
-        queryKey,
-        apiKey: config.apiKey,
-        apiParams,
-        params: {
-          employee_ids: [props.id],
-          dateFrom: dashboardStore.selectedDateRange.dateFrom,
-          dateTo: dashboardStore.selectedDateRange.dateTo,
-          ...apiParams,
-        },
-      });
-    }
-  });
+      if (!uniqueQueries.has(queryKey)) {
+        uniqueQueries.set(queryKey, {
+          queryKey,
+          apiKey: config.apiKey,
+          apiParams,
+          params: {
+            employee_ids: [props.id],
+            dateFrom: dashboardStore.selectedDateRange.dateFrom,
+            dateTo: dashboardStore.selectedDateRange.dateTo,
+            ...apiParams,
+          },
+        });
+      }
+    });
 
   return Array.from(uniqueQueries.values());
 });
@@ -137,73 +139,73 @@ const employeeMetrics = computed(() => {
   const metrics: DashboardMetric[] = [];
 
   // Process each config (excluding average_check which is only for main dashboard)
-  dashboardMetricsConfig.filter(config => config.id !== "average_check").forEach((config) => {
-    // Find the matching query for this config
-    const configQueryKey = `${config.apiKey}_${JSON.stringify(config.apiParams || {})}`;
-    const matchingQuery = queries.find(
-      (query) => query.queryKey === configQueryKey,
-    );
+  dashboardMetricsConfig
+    .filter((config) => config.id !== "average_check")
+    .forEach((config) => {
+      // Find the matching query for this config
+      const configQueryKey = `${config.apiKey}_${JSON.stringify(config.apiParams || {})}`;
+      const matchingQuery = queries.find(
+        (query) => query.queryKey === configQueryKey,
+      );
 
-    if (matchingQuery?.data?.value) {
-      const apiData = matchingQuery.data.value;
-      const dataProperty = config.dataProperty;
-      const valueProperty = config.valueProperty || "count";
-      const progressProperty = config.progressProperty || "assumptionPercent";
-      const planProperty = config.planProperty || "plan";
+      if (matchingQuery?.data?.value) {
+        const apiData = matchingQuery.data.value;
+        const dataProperty = config.dataProperty;
+        const valueProperty = config.valueProperty || "count";
+        const progressProperty = config.progressProperty || "assumptionPercent";
+        const planProperty = config.planProperty || "plan";
 
-      // Get the data from the response (e.g., apiData.invoices)
-      const metricData = apiData[dataProperty] as MetricData | undefined;
+        // Get the data from the response (e.g., apiData.invoices)
+        const metricData = apiData[dataProperty] as MetricData | undefined;
 
-      if (metricData) {
-        const rawValue = metricData[valueProperty as keyof MetricData];
-        const rawPlan = metricData[planProperty as keyof MetricData];
-        const rawProgress = metricData[progressProperty as keyof MetricData];
+        if (metricData) {
+          const rawValue = metricData[valueProperty as keyof MetricData];
+          const rawPlan = metricData[planProperty as keyof MetricData];
+          const rawProgress = metricData[progressProperty as keyof MetricData];
 
-        const metric: DashboardMetric = {
-          id: config.id,
-          title: config.title,
-          value: Number(rawValue) || 0,
-          formatType: config.formatType || "text",
-          description: config.description,
-        };
+          const metric: DashboardMetric = {
+            id: config.id,
+            title: config.title,
+            value: Number(rawValue) || 0,
+            formatType: config.formatType || "text",
+            description: config.description,
+          };
 
-        // Set plan from plan/assumption value (only if planProperty is not false)
-        if (config.planProperty !== false) {
-          const planValue = Number(rawPlan) || 0;
-          metric.plan = planValue;
+          // Set plan from plan/assumption value (only if planProperty is not false)
+          if (config.planProperty !== false) {
+            const planValue = Number(rawPlan) || 0;
+            metric.plan = planValue;
 
-          // Set progress percentage (only if there's a plan)
-          const progressPercent = Number(rawProgress) || 0;
-          metric.progressValue = Math.max(0, Math.min(100, progressPercent));
-        }
-
-        // Calculate average check for paid invoices total metric
-        if (config.id === "invoices_paid_total") {
-          // Find the paid invoices count from the same employee
-          const paidCountQuery = queries.find(
-            (query) =>
-              query.queryKey === `invoices_${JSON.stringify({ is_paid: 1 })}`,
-          );
-
-          if (paidCountQuery?.data?.value) {
-            const paidCountData = paidCountQuery.data.value;
-            const paidCountMetricData = paidCountData.invoices;
-            const paidCount = paidCountMetricData?.count || 0;
-
-            let averageCheck = Number(metric.value) / paidCount;
-            if (isNaN(averageCheck)) {
-              averageCheck = 0;
-            }
-            metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
+            // Set progress percentage (only if there's a plan)
+            const progressPercent = Number(rawProgress) || 0;
+            metric.progressValue = Math.max(0, Math.min(100, progressPercent));
           }
+
+          // Calculate average check for paid invoices total metric
+          if (config.id === "invoices_paid_total") {
+            // Find the paid invoices count from the same employee
+            const paidCountQuery = queries.find(
+              (query) =>
+                query.queryKey === `invoices_${JSON.stringify({ is_paid: 1 })}`,
+            );
+
+            if (paidCountQuery?.data?.value) {
+              const paidCountData = paidCountQuery.data.value;
+              const paidCountMetricData = paidCountData.invoices;
+              const paidCount = paidCountMetricData?.count || 0;
+
+              let averageCheck = Number(metric.value) / paidCount;
+              if (isNaN(averageCheck)) {
+                averageCheck = 0;
+              }
+              metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
+            }
+          }
+
+          metrics.push(metric);
         }
-
-        console.log(metric);
-
-        metrics.push(metric);
       }
-    }
-  });
+    });
 
   return metrics;
 });

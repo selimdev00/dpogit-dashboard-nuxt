@@ -121,8 +121,6 @@ const props = withDefaults(defineProps<MetricCardProps>(), {
   changeType: "neutral",
 });
 
-console.log(props);
-
 const showChange = computed(() => props.changeText !== undefined);
 
 const formattedValue = computed(() => {
