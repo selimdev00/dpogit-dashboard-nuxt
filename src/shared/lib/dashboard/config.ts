@@ -18,7 +18,7 @@ export interface DashboardMetricConfig {
     | "need"
     | "prevCount";
   progressProperty?: "assumptionPercent" | "progress";
-  planProperty?: "plan" | "assumption";
+  planProperty?: "plan" | "assumption" | false;
 }
 
 // Configuration for all dashboard metrics
@@ -31,7 +31,7 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     dataProperty: "invoices",
     valueProperty: "count",
     progressProperty: "assumptionPercent",
-    planProperty: "plan",
+    planProperty: false,
   },
   {
     id: "invoices_total",
@@ -44,7 +44,7 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     dataProperty: "invoices",
     valueProperty: "count",
     progressProperty: "assumptionPercent",
-    planProperty: "plan",
+    planProperty: false,
   },
   {
     id: "invoices_paid_count",
@@ -57,7 +57,7 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     dataProperty: "invoices",
     valueProperty: "count",
     progressProperty: "assumptionPercent",
-    planProperty: "plan",
+    planProperty: false,
   },
   {
     id: "invoices_paid_total",
@@ -84,7 +84,7 @@ export const dashboardMetricsConfig: DashboardMetricConfig[] = [
     dataProperty: "calls",
     valueProperty: "count",
     progressProperty: "assumptionPercent",
-    planProperty: "plan",
+    planProperty: false,
   },
   {
     id: "outcoming_calls",

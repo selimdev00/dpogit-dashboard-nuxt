@@ -13,10 +13,10 @@
       </div>
     </div>
 
-    <!-- Progress Bar -->
+    <!-- Progress Bar (only if hasProgress) -->
     <div class="w-full bg-[#383941] rounded-full h-[2px]">
       <template v-if="loading">
-        <div class="bg-muted h-full rounded-full animate-pulse w-1/2"></div>
+        <div class="bg-muted h-full rounded-full animate-pulse w-full"></div>
       </template>
       <template v-else>
         <div
@@ -26,8 +26,8 @@
       </template>
     </div>
 
-    <!-- Remaining Caption -->
-    <div class="text-xs text-muted-foreground">
+    <!-- Remaining Caption (only if hasProgress) -->
+    <div v-if="hasProgress" class="text-xs text-muted-foreground">
       <template v-if="loading">
         <div class="animate-pulse bg-muted rounded w-16 h-3"></div>
       </template>
@@ -44,7 +44,7 @@ import { formatValue, type FormatType } from "@/shared/lib/formatters";
 interface MetricProgressProps {
   label: string;
   current: number;
-  total: number;
+  total?: number;
   type?: FormatType;
   loading?: boolean;
 }
@@ -55,8 +55,12 @@ const props = withDefaults(defineProps<MetricProgressProps>(), {
 });
 
 const progressPercentage = computed((): number => {
-  if (props.total === 0) return 0;
+  if (!props.total || props.total === 0) return 0;
   return Math.min(100, Math.max(0, (props.current / props.total) * 100));
+});
+
+const hasProgress = computed((): boolean => {
+  return props.total !== undefined && props.total > 0;
 });
 
 const progressColor = computed((): string => {
@@ -72,6 +76,7 @@ const progressColor = computed((): string => {
 });
 
 const remaining = computed((): number => {
+  if (!props.total) return 0;
   return Math.max(0, props.total - props.current);
 });
 

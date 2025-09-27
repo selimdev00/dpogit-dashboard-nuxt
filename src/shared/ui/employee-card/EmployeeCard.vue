@@ -44,7 +44,7 @@
         <MetricProgress
           :label="metric.title"
           :current="Number(metric.value) || 0"
-          :total="Number(metric.plan) || 0"
+          v-bind="metric.plan !== undefined ? { total: Number(metric.plan) || 0 } : {}"
           :type="metric.formatType"
           :loading="isLoading"
         />
@@ -161,15 +161,17 @@ const employeeMetrics = computed(() => {
           description: config.description,
         };
 
-        // Set plan from plan/assumption value
-        const planValue = Number(rawPlan) || 0;
-        if (planValue > 0) {
-          metric.plan = planValue;
-        }
+        // Set plan from plan/assumption value (only if planProperty is not false)
+        if (config.planProperty !== false) {
+          const planValue = Number(rawPlan) || 0;
+          if (planValue > 0) {
+            metric.plan = planValue;
+          }
 
-        // Set progress percentage
-        const progressPercent = Number(rawProgress) || 0;
-        metric.progressValue = Math.max(0, Math.min(100, progressPercent));
+          // Set progress percentage (only if there's a plan)
+          const progressPercent = Number(rawProgress) || 0;
+          metric.progressValue = Math.max(0, Math.min(100, progressPercent));
+        }
 
         metrics.push(metric);
       }

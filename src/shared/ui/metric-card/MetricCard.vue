@@ -9,7 +9,7 @@
         <span class="text-2xl font-bold">{{ formattedValue }}</span>
 
         <div class="flex items-center gap-2 mt-1">
-          <span v-if="plan" class="text-xs text-muted-foreground"
+          <span v-if="plan !== undefined" class="text-xs text-muted-foreground"
             >/ {{ formattedPlan }}</span
           >
         </div>
@@ -20,7 +20,7 @@
       {{ description }}
     </div>
 
-    <div v-if="progressValue !== undefined" class="mt-3">
+    <div class="mt-3">
       <div class="w-full bg-[#383941] rounded-full h-[2px]">
         <div
           :class="[
@@ -31,7 +31,8 @@
         ></div>
       </div>
       <div class="text-xs text-muted-foreground mt-1 text-right">
-        {{ progressValue }}%
+        <span v-if="progressValue !== undefined">{{ progressValue }}%</span>
+        <div class="h-3" v-else></div>
       </div>
     </div>
 
@@ -106,6 +107,8 @@ const props = withDefaults(defineProps<MetricCardProps>(), {
   changeType: "neutral",
 });
 
+console.log(props);
+
 const showChange = computed(() => props.changeText !== undefined);
 
 const formattedValue = computed(() => {
@@ -113,12 +116,12 @@ const formattedValue = computed(() => {
 });
 
 const formattedPlan = computed(() => {
-  if (!props.plan) return "";
+  if (props.plan === undefined) return "";
   return formatValue(props.plan, props.formatType);
 });
 
 const progressColor = computed(() => {
-  if (props.progressValue === undefined) return "bg-primary";
+  if (props.progressValue === undefined) return "bg-[#383941]";
 
   if (props.progressValue < 40) {
     return "bg-danger";

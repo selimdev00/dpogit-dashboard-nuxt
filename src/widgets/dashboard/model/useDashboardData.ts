@@ -76,17 +76,17 @@ export function useDashboardData(departmentId?: Ref<number> | number) {
           // Set the main value (e.g., metricData.count)
           metric.value = metricData[valueProperty as keyof MetricData] || 0;
 
-          // Set plan from plan/assumption value
-          const planValue = metricData[planProperty as keyof MetricData] || 0;
-          if (planValue > 0) {
+          // Set plan from plan/assumption value (only if planProperty is not false)
+          if (config.planProperty !== false) {
+            const planValue = metricData[planProperty as keyof MetricData] || 0;
             metric.plan = planValue;
-          }
 
-          // Set progress percentage
-          const progressPercent = metricData[
-            progressProperty as keyof MetricData
-          ] as number;
-          metric.progressValue = Math.max(0, Math.min(100, progressPercent));
+            // Set progress percentage (only if there's a plan)
+            const progressPercent = metricData[
+              progressProperty as keyof MetricData
+            ] as number;
+            metric.progressValue = Math.max(0, Math.min(100, progressPercent));
+          }
 
           // Calculate change compared to previous value
           const currentValue = metric.value as number;

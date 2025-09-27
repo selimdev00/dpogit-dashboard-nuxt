@@ -38,6 +38,7 @@ export interface ApiQueryParams {
   employee_ids?: number[];
   department_ids?: number[];
   is_paid?: 0 | 1;
+  direction?: "in" | "out";
 }
 
 export interface PlanData {
