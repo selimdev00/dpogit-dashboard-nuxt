@@ -19,6 +19,17 @@
           </div>
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <!-- Save Success Message -->
+            <div
+              v-if="
+                savePlansMutation.isSuccess.value &&
+                !savePlansMutation.isPending.value
+              "
+              class="flex items-center gap-2 px-3 py-1 bg-green-50 border border-green-200 rounded text-sm"
+            >
+              <span class="text-green-800 font-medium">✓ Планы успешно сохранены</span>
+            </div>
+
             <Button
               @click="savePlans"
               :disabled="
@@ -74,16 +85,6 @@
             <p class="text-sm text-destructive/80">{{ error.message }}</p>
           </div>
 
-          <!-- Save Success Message -->
-          <div
-            v-if="
-              savePlansMutation.isSuccess.value &&
-              !savePlansMutation.isPending.value
-            "
-            class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
-          >
-            <h3 class="text-green-800 font-medium">Планы успешно сохранены</h3>
-          </div>
 
           <!-- Save Error Message -->
           <div
@@ -334,6 +335,9 @@ const departmentTotals = ref<{ calls: number; invoices: number }>({
   invoices: 0,
 });
 
+// Store for tracking department total changes
+const changedDepartmentTotals = ref<{ calls?: number; invoices?: number }>({});
+
 const selectedDepartment = computed<Department | null>(() => {
   if (!data.value || !selectedDepartmentId.value) return null;
   return (
@@ -350,26 +354,8 @@ const getInitials = (name: string): string => {
   return parts[0]?.[0]?.toUpperCase() || "";
 };
 
-// Get employee plan value from API data or local store
+// Get employee plan value from local store (synced from API)
 const getEmployeePlan = (employeeId: number, metric: string): number => {
-  // First check if we have API data for this employee
-  if (plansData.value) {
-    const apiPlan = plansData.value.find(
-      (plan) => plan.employee_id === employeeId,
-    );
-    if (apiPlan) {
-      switch (metric) {
-        case "calls":
-          return apiPlan.calls;
-        case "invoices":
-          return apiPlan.invoices;
-        case "sold_tickets":
-          return apiPlan.sold_tickets;
-      }
-    }
-  }
-
-  // Fall back to local store or default 0
   return employeePlans.value[employeeId]?.[metric] || 0;
 };
 
@@ -395,10 +381,15 @@ const updateEmployeePlan = (
   changedPlans.value[employeeId][metric] = value;
 };
 
-// Computed totals from employee plans
+// Computed totals - use department totals if available, otherwise sum employee plans
 const totalCalls = computed(() => {
-  if (!selectedDepartment.value) return 0;
+  // If department totals are set (from API or manual input), use them
+  if (departmentTotals.value.calls > 0) {
+    return departmentTotals.value.calls;
+  }
 
+  // Otherwise, calculate from employee plans
+  if (!selectedDepartment.value) return 0;
   let total = 0;
   selectedDepartment.value.employees.forEach((employee) => {
     total += getEmployeePlan(employee.id, "calls");
@@ -407,8 +398,13 @@ const totalCalls = computed(() => {
 });
 
 const totalInvoices = computed(() => {
-  if (!selectedDepartment.value) return 0;
+  // If department totals are set (from API or manual input), use them
+  if (departmentTotals.value.invoices > 0) {
+    return departmentTotals.value.invoices;
+  }
 
+  // Otherwise, calculate from employee plans
+  if (!selectedDepartment.value) return 0;
   let total = 0;
   selectedDepartment.value.employees.forEach((employee) => {
     total += getEmployeePlan(employee.id, "invoices");
@@ -421,6 +417,7 @@ const updateTotalCalls = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const value = parseInt(target.value) || 0;
   departmentTotals.value.calls = value;
+  changedDepartmentTotals.value.calls = value;
 };
 
 // Update total invoices (optional - for manual override)
@@ -428,16 +425,17 @@ const updateTotalInvoices = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const value = parseInt(target.value) || 0;
   departmentTotals.value.invoices = value;
+  changedDepartmentTotals.value.invoices = value;
 };
 
 // Check if there are any changes to save
 const hasChanges = computed(() => {
-  return Object.keys(changedPlans.value).length > 0;
+  return Object.keys(changedPlans.value).length > 0 || Object.keys(changedDepartmentTotals.value).length > 0;
 });
 
 // Save plans function
 const savePlans = async () => {
-  if (!hasChanges.value) return;
+  if (!hasChanges.value && Object.keys(changedDepartmentTotals.value).length === 0) return;
 
   const monthToSave = currentMonth.value; // Use reactive current month
   const plansToSave: Partial<PlanData>[] = [];
@@ -450,6 +448,7 @@ const savePlans = async () => {
     const planEntry: Partial<PlanData> = {
       month: monthToSave,
       employee_id: employeeId,
+      department_id: selectedDepartmentId.value as number,
     };
 
     // Add all changed metrics to the same plan entry
@@ -470,10 +469,29 @@ const savePlans = async () => {
     plansToSave.push(planEntry);
   });
 
+  // Handle department total changes (send only department_id with values)
+  if (Object.keys(changedDepartmentTotals.value).length > 0) {
+    const departmentTotalEntry: Partial<PlanData> = {
+      month: monthToSave,
+      department_id: selectedDepartmentId.value as number,
+      employee_id: null, // Null for department totals
+    };
+
+    if (changedDepartmentTotals.value.calls !== undefined) {
+      departmentTotalEntry.calls = changedDepartmentTotals.value.calls;
+    }
+    if (changedDepartmentTotals.value.invoices !== undefined) {
+      departmentTotalEntry.invoices = changedDepartmentTotals.value.invoices;
+    }
+
+    plansToSave.push(departmentTotalEntry);
+  }
+
   try {
     await savePlansMutation.mutateAsync(plansToSave as PlanData[]);
     // Clear changes after successful save
     changedPlans.value = {};
+    changedDepartmentTotals.value = {};
   } catch (error) {
     console.error("Failed to save plans:", error);
   }
@@ -482,6 +500,38 @@ const savePlans = async () => {
 const onDepartmentChange = () => {
   // Additional logic if needed when department changes
 };
+
+// Sync API data to local stores when plans data changes
+watch(
+  [plansData, selectedDepartmentId],
+  ([newPlansData, selectedDeptId]) => {
+    if (!newPlansData || !selectedDeptId) return;
+
+    // Clear local stores
+    employeePlans.value = {};
+    departmentTotals.value = { calls: 0, invoices: 0 };
+
+    newPlansData.forEach((plan) => {
+      // Check if this plan is for the selected department
+      if (plan.department_id === selectedDeptId) {
+        if (plan.employee_id === null) {
+          // This is a department total (no employee_id)
+          departmentTotals.value.calls = plan.calls || 0;
+          departmentTotals.value.invoices = plan.invoices || 0;
+        } else {
+          // This is an employee plan (has employee_id)
+          if (!employeePlans.value[plan.employee_id]) {
+            employeePlans.value[plan.employee_id] = {};
+          }
+          employeePlans.value[plan.employee_id].calls = plan.calls || 0;
+          employeePlans.value[plan.employee_id].invoices = plan.invoices || 0;
+          employeePlans.value[plan.employee_id].sold_tickets = plan.sold_tickets || 0;
+        }
+      }
+    });
+  },
+  { immediate: true, deep: true },
+);
 
 // Set first department as default when data loads
 watch(
