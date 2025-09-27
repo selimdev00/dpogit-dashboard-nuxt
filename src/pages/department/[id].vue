@@ -113,25 +113,27 @@ const circleMetrics = computed(() => {
   }
 
   // Find metrics by ID from dashboard data
-  const getMetric = (id: string) => dashboardMetrics.value?.find(m => m.id === id);
+  const getMetric = (id: string) =>
+    dashboardMetrics.value?.find((m) => m.id === id);
 
   // Invoice metrics
-  const invoiceCount = getMetric('invoices_count');
-  const invoiceTotal = getMetric('invoices_total');
-  const invoicePaidCount = getMetric('invoices_paid_count');
-  const invoicePaidTotal = getMetric('invoices_paid_total');
+  const invoiceCount = getMetric("invoices_count");
+  const invoiceTotal = getMetric("invoices_total");
+  const invoicePaidCount = getMetric("invoices_paid_count");
+  const invoicePaidTotal = getMetric("invoices_paid_total");
 
   // Call metrics
-  const incomingCalls = getMetric('incoming_calls');
-  const outcomingCalls = getMetric('outcoming_calls');
+  const incomingCalls = getMetric("incoming_calls");
+  const outcomingCalls = getMetric("outcoming_calls");
 
   const metrics = [];
 
   // Invoices Count Circle (count + paid_count)
   if (invoiceCount && invoicePaidCount) {
-    const totalCount = (invoiceCount.value || 0) + (invoicePaidCount.value || 0);
+    const totalCount =
+      (invoiceCount.value || 0) + (invoicePaidCount.value || 0);
     const paidValue = invoicePaidCount.value || 0;
-    const unpaidValue = (invoiceCount.value || 0);
+    const unpaidValue = invoiceCount.value || 0;
 
     if (totalCount > 0) {
       metrics.push({
@@ -139,19 +141,19 @@ const circleMetrics = computed(() => {
         label: `Счета отдела: ${departmentName.value || "Загрузка..."}`,
         totalValue: totalCount,
         formatType: "number" as const,
-        showDetails: true,
+        showDetails: false,
         valueGroups: [
           {
             name: "Неоплаченные",
             value: unpaidValue,
             percentage: Math.round((unpaidValue / totalCount) * 100),
-            color: colors[0]
+            color: colors[0],
           },
           {
             name: "Оплаченные",
             value: paidValue,
             percentage: Math.round((paidValue / totalCount) * 100),
-            color: colors[1]
+            color: colors[1],
           },
         ],
       });
@@ -160,9 +162,10 @@ const circleMetrics = computed(() => {
 
   // Invoices Total Circle (total + paid_total)
   if (invoiceTotal && invoicePaidTotal) {
-    const totalAmount = (invoiceTotal.value || 0) + (invoicePaidTotal.value || 0);
+    const totalAmount =
+      (invoiceTotal.value || 0) + (invoicePaidTotal.value || 0);
     const paidAmount = invoicePaidTotal.value || 0;
-    const unpaidAmount = (invoiceTotal.value || 0);
+    const unpaidAmount = invoiceTotal.value || 0;
 
     if (totalAmount > 0) {
       metrics.push({
@@ -170,19 +173,19 @@ const circleMetrics = computed(() => {
         label: "Сумма счетов отдела, руб",
         totalValue: totalAmount,
         formatType: "currency" as const,
-        showDetails: true,
+        showDetails: false,
         valueGroups: [
           {
             name: "Неоплаченные",
             value: unpaidAmount,
             percentage: Math.round((unpaidAmount / totalAmount) * 100),
-            color: colors[0]
+            color: colors[0],
           },
           {
             name: "Оплаченные",
             value: paidAmount,
             percentage: Math.round((paidAmount / totalAmount) * 100),
-            color: colors[1]
+            color: colors[1],
           },
         ],
       });
@@ -201,19 +204,19 @@ const circleMetrics = computed(() => {
         label: "Звонки отдела",
         totalValue: totalCalls,
         formatType: "number" as const,
-        showDetails: true,
+        showDetails: false,
         valueGroups: [
           {
             name: "Входящие",
             value: incomingValue,
             percentage: Math.round((incomingValue / totalCalls) * 100),
-            color: colors[0]
+            color: colors[0],
           },
           {
             name: "Исходящие",
             value: outcomingValue,
             percentage: Math.round((outcomingValue / totalCalls) * 100),
-            color: colors[1]
+            color: colors[1],
           },
         ],
       });
