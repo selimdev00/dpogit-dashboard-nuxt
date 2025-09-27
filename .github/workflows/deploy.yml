@@ -33,7 +33,7 @@ jobs:
           git pull origin master
 
           # Deploy with Docker Compose
-          docker-compose up -d --build
+          docker compose up -d --build
 
           echo "✅ Deployment completed successfully!"
         EOF
