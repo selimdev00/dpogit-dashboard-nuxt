@@ -35,6 +35,7 @@
         {{ formatValueLocal(current) }} / {{ formatValueLocal(total) }}
       </template>
     </div>
+    <div v-else class="h-3"></div>
   </div>
 </template>
 
@@ -60,7 +61,7 @@ const progressPercentage = computed((): number => {
 });
 
 const hasProgress = computed((): boolean => {
-  return props.total !== undefined && props.total > 0;
+  return props.total !== undefined;
 });
 
 const progressColor = computed((): string => {

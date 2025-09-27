@@ -44,7 +44,9 @@
         <MetricProgress
           :label="metric.title"
           :current="Number(metric.value) || 0"
-          v-bind="metric.plan !== undefined ? { total: Number(metric.plan) || 0 } : {}"
+          v-bind="
+            metric.plan !== undefined ? { total: Number(metric.plan) || 0 } : {}
+          "
           :type="metric.formatType"
           :loading="isLoading"
         />
@@ -125,7 +127,9 @@ const queries = computed(() => {
 
 // Combined loading state
 const isLoading = computed(() => {
-  return queries.value.some(query => query.isLoading.value || query.isFetching.value);
+  return queries.value.some(
+    (query) => query.isLoading.value || query.isFetching.value,
+  );
 });
 
 // Process the data using dashboard configuration
@@ -136,7 +140,9 @@ const employeeMetrics = computed(() => {
   dashboardMetricsConfig.forEach((config) => {
     // Find the matching query for this config
     const configQueryKey = `${config.apiKey}_${JSON.stringify(config.apiParams || {})}`;
-    const matchingQuery = queries.value.find(query => query.queryKey === configQueryKey);
+    const matchingQuery = queries.value.find(
+      (query) => query.queryKey === configQueryKey,
+    );
 
     if (matchingQuery?.data?.value) {
       const apiData = matchingQuery.data.value;
@@ -164,14 +170,14 @@ const employeeMetrics = computed(() => {
         // Set plan from plan/assumption value (only if planProperty is not false)
         if (config.planProperty !== false) {
           const planValue = Number(rawPlan) || 0;
-          if (planValue > 0) {
-            metric.plan = planValue;
-          }
+          metric.plan = planValue;
 
           // Set progress percentage (only if there's a plan)
           const progressPercent = Number(rawProgress) || 0;
           metric.progressValue = Math.max(0, Math.min(100, progressPercent));
         }
+
+        console.log(metric);
 
         metrics.push(metric);
       }
