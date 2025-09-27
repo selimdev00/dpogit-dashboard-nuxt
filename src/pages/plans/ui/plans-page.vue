@@ -1,210 +1,268 @@
 <template>
-  <div class="min-h-screen bg-background">
-    <div class="container mx-auto py-8">
-      <div
-        class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <h1 class="text-2xl font-bold text-foreground">Планы</h1>
-          <p class="text-sm text-muted-foreground">
-            Текущий месяц: {{ currentMonth }}
-            <span v-if="plansLoading" class="ml-2 text-blue-500"
-              >(загрузка...)</span
-            >
-          </p>
-        </div>
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button
-            @click="savePlans"
-            :disabled="
-              !hasChanges ||
-              savePlansMutation.isPending.value ||
-              !authStore.canPlan
-            "
-          >
-            {{
-              savePlansMutation.isPending.value ? "Сохранение..." : "Сохранить"
-            }}
-          </Button>
-
-          <Select v-model="selectedDepartmentId" @change="onDepartmentChange">
-            <SelectTrigger>
-              <SelectValue placeholder="Выберите отдел" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="department in data"
-                :key="department.id"
-                :value="department.id"
-              >
-                {{ department.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div v-if="isLoading" class="flex items-center justify-center py-12">
+  <div class="bg-background flex flex-col">
+    <!-- Sticky Header -->
+    <div class="sticky top-16 z-10 bg-background border-b">
+      <div class="container mx-auto py-4">
         <div
-          class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-r-transparent"
-        ></div>
-        <span class="ml-3 text-muted-foreground">Загрузка...</span>
-      </div>
-
-      <!-- Error State -->
-      <div
-        v-else-if="error"
-        class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center"
-      >
-        <h3 class="mb-2 font-medium text-destructive">Ошибка загрузки</h3>
-        <p class="text-sm text-destructive/80">{{ error.message }}</p>
-      </div>
-
-      <!-- Save Success Message -->
-      <div
-        v-if="
-          savePlansMutation.isSuccess.value &&
-          !savePlansMutation.isPending.value
-        "
-        class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
-      >
-        <h3 class="text-green-800 font-medium">Планы успешно сохранены</h3>
-      </div>
-
-      <!-- Save Error Message -->
-      <div
-        v-if="savePlansMutation.isError.value"
-        class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
-      >
-        <h3 class="text-destructive font-medium mb-2">Ошибка сохранения</h3>
-        <p class="text-sm text-destructive/80">
-          {{ savePlansMutation.error.value?.message || "Неизвестная ошибка" }}
-        </p>
-      </div>
-
-      <!-- Plans Error Message -->
-      <div
-        v-if="plansError && !plansLoading"
-        class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
-      >
-        <h3 class="text-destructive font-medium mb-2">
-          Ошибка загрузки планов
-        </h3>
-        <p class="text-sm text-destructive/80">
-          {{ plansError.message || "Не удалось загрузить данные планов" }}
-        </p>
-      </div>
-
-      <!-- No Permission Warning -->
-      <div
-        v-if="!authStore.canPlan"
-        class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
-      >
-        <h3 class="text-yellow-800 font-medium mb-2">Ограниченный доступ</h3>
-        <p class="text-sm text-yellow-700">
-          У вас нет прав для редактирования планов. Вы можете только
-          просматривать данные.
-        </p>
-      </div>
-
-      <!-- Department Content -->
-      <div
-        v-else-if="selectedDepartment"
-        class="rounded-lg border bg-card text-card-foreground shadow-sm relative"
-      >
-        <!-- Plans Loading Overlay -->
-        <div
-          v-if="plansLoading"
-          class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg"
+          class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
-          <div class="flex items-center space-x-3">
-            <div
-              class="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent"
-            ></div>
-            <span class="text-muted-foreground">Загрузка данных плана...</span>
+          <div>
+            <h1 class="text-2xl font-bold text-foreground">Планы</h1>
+            <p class="text-sm text-muted-foreground">
+              Текущий месяц: {{ currentMonth }}
+              <span v-if="plansLoading" class="ml-2 text-blue-500"
+                >(загрузка...)</span
+              >
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button
+              @click="savePlans"
+              :disabled="
+                !hasChanges ||
+                savePlansMutation.isPending.value ||
+                !authStore.canPlan
+              "
+            >
+              {{
+                savePlansMutation.isPending.value
+                  ? "Сохранение..."
+                  : "Сохранить"
+              }}
+            </Button>
+
+            <Select v-model="selectedDepartmentId" @change="onDepartmentChange">
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите отдел" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="department in data"
+                  :key="department.id"
+                  :value="department.id"
+                >
+                  {{ department.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        <!-- Table Header -->
-        <div
-          class="grid grid-cols-4 gap-4 border-b p-4 text-sm font-medium text-muted-foreground"
-        >
-          <div class="col-span-2">Сотрудник</div>
-          <div class="text-center">Звонки, шт</div>
-          <div class="text-center">Счета, шт</div>
-        </div>
+      </div>
+    </div>
 
-        <!-- Employee Rows -->
-        <div class="divide-y">
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-hidden h-screen">
+      <div class="h-full overflow-y-auto">
+        <div class="container mx-auto p-4">
+          <!-- Loading State -->
+          <div v-if="isLoading" class="flex items-center justify-center py-12">
+            <div
+              class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-r-transparent"
+            ></div>
+            <span class="ml-3 text-muted-foreground">Загрузка...</span>
+          </div>
+
+          <!-- Error State -->
           <div
-            v-for="employee in selectedDepartment.employees"
-            :key="employee.id"
-            class="grid grid-cols-4 gap-4 p-4 transition-colors hover:bg-muted/10"
+            v-else-if="error"
+            class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center"
           >
-            <!-- Employee Info -->
-            <div class="col-span-2 flex items-center gap-3">
-              <div class="relative h-10 w-10 flex-shrink-0">
-                <img
-                  v-if="employee.photo"
-                  :src="employee.photo"
-                  :alt="employee.name"
-                  class="h-full w-full rounded-full object-cover"
-                />
+            <h3 class="mb-2 font-medium text-destructive">Ошибка загрузки</h3>
+            <p class="text-sm text-destructive/80">{{ error.message }}</p>
+          </div>
+
+          <!-- Save Success Message -->
+          <div
+            v-if="
+              savePlansMutation.isSuccess.value &&
+              !savePlansMutation.isPending.value
+            "
+            class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
+          >
+            <h3 class="text-green-800 font-medium">Планы успешно сохранены</h3>
+          </div>
+
+          <!-- Save Error Message -->
+          <div
+            v-if="savePlansMutation.isError.value"
+            class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+          >
+            <h3 class="text-destructive font-medium mb-2">Ошибка сохранения</h3>
+            <p class="text-sm text-destructive/80">
+              {{
+                savePlansMutation.error.value?.message || "Неизвестная ошибка"
+              }}
+            </p>
+          </div>
+
+          <!-- Plans Error Message -->
+          <div
+            v-if="plansError && !plansLoading"
+            class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+          >
+            <h3 class="text-destructive font-medium mb-2">
+              Ошибка загрузки планов
+            </h3>
+            <p class="text-sm text-destructive/80">
+              {{ plansError.message || "Не удалось загрузить данные планов" }}
+            </p>
+          </div>
+
+          <!-- No Permission Warning -->
+          <div
+            v-if="!authStore.canPlan"
+            class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+          >
+            <h3 class="text-yellow-800 font-medium mb-2">
+              Ограниченный доступ
+            </h3>
+            <p class="text-sm text-yellow-700">
+              У вас нет прав для редактирования планов. Вы можете только
+              просматривать данные.
+            </p>
+          </div>
+
+          <!-- Department Content -->
+          <div
+            v-else-if="selectedDepartment"
+            class="h-full rounded-lg border bg-card text-card-foreground shadow-sm relative flex flex-col"
+          >
+            <!-- Plans Loading Overlay -->
+            <div
+              v-if="plansLoading"
+              class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg"
+            >
+              <div class="flex items-center space-x-3">
                 <div
-                  v-else
-                  class="flex h-full w-full items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                  class="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent"
+                ></div>
+                <span class="text-muted-foreground"
+                  >Загрузка данных плана...</span
                 >
-                  {{ getInitials(employee.name) }}
+              </div>
+            </div>
+            <!-- Table Header -->
+            <div
+              class="grid grid-cols-4 gap-4 border-b p-4 text-sm font-medium text-muted-foreground flex-shrink-0"
+            >
+              <div class="col-span-2">Сотрудник</div>
+              <div class="text-center">Исходящие звонки</div>
+              <div class="text-center">Сумма оплаченных счетов</div>
+            </div>
+
+            <!-- Scrollable Employee Rows -->
+            <div class="flex-1 overflow-y-auto">
+              <div class="divide-y relative">
+                <div
+                  v-for="employee in selectedDepartment.employees"
+                  :key="employee.id"
+                  class="grid grid-cols-4 gap-4 p-4 transition-colors hover:bg-muted/10"
+                >
+                  <!-- Employee Info -->
+                  <div class="col-span-2 flex items-center gap-3">
+                    <div class="relative h-10 w-10 flex-shrink-0">
+                      <img
+                        v-if="employee.photo"
+                        :src="employee.photo"
+                        :alt="employee.name"
+                        class="h-full w-full rounded-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="flex h-full w-full items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                      >
+                        {{ getInitials(employee.name) }}
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm font-medium text-foreground">
+                        {{ employee.name }}
+                      </p>
+                      <p
+                        v-if="employee.position"
+                        class="truncate text-xs text-muted-foreground"
+                      >
+                        {{ employee.position }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Metrics -->
+                  <div class="flex items-center justify-center">
+                    <input
+                      :value="getEmployeePlan(employee.id, 'calls')"
+                      type="number"
+                      min="0"
+                      :disabled="!authStore.canPlan"
+                      class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      @input="updateEmployeePlan(employee.id, 'calls', $event)"
+                    />
+                  </div>
+                  <div class="flex items-center justify-center">
+                    <input
+                      :value="getEmployeePlan(employee.id, 'invoices')"
+                      type="number"
+                      min="0"
+                      :disabled="!authStore.canPlan"
+                      class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      @input="
+                        updateEmployeePlan(employee.id, 'invoices', $event)
+                      "
+                    />
+                  </div>
+                </div>
+
+                <!-- Totals Row -->
+                <div
+                  class="grid grid-cols-4 gap-4 p-4 bg-muted/5 border-t-2 border-muted sticky bottom-0"
+                >
+                  <!-- Total Label -->
+                  <div class="col-span-2 flex items-center">
+                    <div class="font-medium text-foreground">
+                      Итого по отделу:
+                    </div>
+                  </div>
+
+                  <!-- Total Calls Input -->
+                  <div class="flex items-center justify-center">
+                    <input
+                      :value="totalCalls"
+                      type="number"
+                      min="0"
+                      :disabled="!authStore.canPlan"
+                      class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                      @input="updateTotalCalls"
+                    />
+                  </div>
+
+                  <!-- Total Invoices Input -->
+                  <div class="flex items-center justify-center">
+                    <input
+                      :value="totalInvoices"
+                      type="number"
+                      min="0"
+                      :disabled="!authStore.canPlan"
+                      class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                      @input="updateTotalInvoices"
+                    />
+                  </div>
                 </div>
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium text-foreground">
-                  {{ employee.name }}
-                </p>
-                <p
-                  v-if="employee.position"
-                  class="truncate text-xs text-muted-foreground"
-                >
-                  {{ employee.position }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Metrics -->
-            <div class="flex items-center justify-center">
-              <input
-                :value="getEmployeePlan(employee.id, 'calls')"
-                type="number"
-                min="0"
-                :disabled="!authStore.canPlan"
-                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                @input="updateEmployeePlan(employee.id, 'calls', $event)"
-              />
-            </div>
-            <div class="flex items-center justify-center">
-              <input
-                :value="getEmployeePlan(employee.id, 'invoices')"
-                type="number"
-                min="0"
-                :disabled="!authStore.canPlan"
-                class="w-20 rounded-md border bg-background px-2 py-1 text-center text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                @input="updateEmployeePlan(employee.id, 'invoices', $event)"
-              />
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- No Selection State -->
-      <div v-else class="flex items-center justify-center py-12">
-        <div class="text-center">
-          <h3 class="mb-2 text-lg font-medium text-foreground">
-            Выберите отдел
-          </h3>
-          <p class="text-muted-foreground">
-            Выберите отдел из списка для просмотра сотрудников
-          </p>
+          <!-- No Selection State -->
+          <div v-else class="flex items-center justify-center py-12">
+            <div class="text-center">
+              <h3 class="mb-2 text-lg font-medium text-foreground">
+                Выберите отдел
+              </h3>
+              <p class="text-muted-foreground">
+                Выберите отдел из списка для просмотра сотрудников
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -266,6 +324,12 @@ const changedPlans = ref<Record<number, Record<string, number>>>({});
 // Store for employee plans - structure: { employeeId: { metric: value } }
 const employeePlans = ref<Record<number, Record<string, number>>>({});
 
+// Store for department totals
+const departmentTotals = ref<{ calls: number; invoices: number }>({
+  calls: 0,
+  invoices: 0,
+});
+
 const selectedDepartment = computed<Department | null>(() => {
   if (!data.value || !selectedDepartmentId.value) return null;
   return (
@@ -325,6 +389,41 @@ const updateEmployeePlan = (
     changedPlans.value[employeeId] = {};
   }
   changedPlans.value[employeeId][metric] = value;
+};
+
+// Computed totals from employee plans
+const totalCalls = computed(() => {
+  if (!selectedDepartment.value) return 0;
+
+  let total = 0;
+  selectedDepartment.value.employees.forEach((employee) => {
+    total += getEmployeePlan(employee.id, "calls");
+  });
+  return total;
+});
+
+const totalInvoices = computed(() => {
+  if (!selectedDepartment.value) return 0;
+
+  let total = 0;
+  selectedDepartment.value.employees.forEach((employee) => {
+    total += getEmployeePlan(employee.id, "invoices");
+  });
+  return total;
+});
+
+// Update total calls (optional - for manual override)
+const updateTotalCalls = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const value = parseInt(target.value) || 0;
+  departmentTotals.value.calls = value;
+};
+
+// Update total invoices (optional - for manual override)
+const updateTotalInvoices = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const value = parseInt(target.value) || 0;
+  departmentTotals.value.invoices = value;
 };
 
 // Check if there are any changes to save
