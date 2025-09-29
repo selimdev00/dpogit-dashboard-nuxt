@@ -24,11 +24,11 @@
         <DepartmentGrid />
 
         <!-- Circle Metrics -->
-        <MetricsCircleGrid
-          :circle-metrics="circleMetrics"
-          :is-loading="isLoading"
-          :has-error="hasError"
-        />
+        <!--        <MetricsCircleGrid-->
+        <!--          :circle-metrics="circleMetrics"-->
+        <!--          :is-loading="isLoading"-->
+        <!--          :has-error="hasError"-->
+        <!--        />-->
       </div>
     </div>
   </div>
