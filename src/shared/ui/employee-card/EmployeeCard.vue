@@ -101,12 +101,6 @@ const queryConfigs = computed(() => {
           queryKey,
           apiKey: config.apiKey,
           apiParams,
-          params: {
-            employee_ids: [props.id],
-            dateFrom: dashboardStore.selectedDateRange.dateFrom,
-            dateTo: dashboardStore.selectedDateRange.dateTo,
-            ...apiParams,
-          },
         });
       }
     });
@@ -116,7 +110,12 @@ const queryConfigs = computed(() => {
 
 // Create queries dynamically based on config
 const queries = queryConfigs.value.map((config) => {
-  const queryParams = computed(() => config.params);
+  const queryParams = computed(() => ({
+    employee_ids: [props.id],
+    dateFrom: dashboardStore.selectedDateRange.dateFrom,
+    dateTo: dashboardStore.selectedDateRange.dateTo,
+    ...config.apiParams,
+  }));
 
   return {
     ...useMetricQuery(config.apiKey, queryParams, {
@@ -148,6 +147,15 @@ const employeeMetrics = computed(() => {
         (query) => query.queryKey === configQueryKey,
       );
 
+      // Always create a metric entry, even if loading or no data yet
+      const metric: DashboardMetric = {
+        id: config.id,
+        title: config.title,
+        value: 0,
+        formatType: config.formatType || "text",
+        description: config.description,
+      };
+
       if (matchingQuery?.data?.value) {
         const apiData = matchingQuery.data.value;
         const dataProperty = config.dataProperty;
@@ -163,13 +171,7 @@ const employeeMetrics = computed(() => {
           const rawPlan = metricData[planProperty as keyof MetricData];
           const rawProgress = metricData[progressProperty as keyof MetricData];
 
-          const metric: DashboardMetric = {
-            id: config.id,
-            title: config.title,
-            value: Number(rawValue) || 0,
-            formatType: config.formatType || "text",
-            description: config.description,
-          };
+          metric.value = Number(rawValue) || 0;
 
           // Set plan from plan/assumption value (only if planProperty is not false)
           if (config.planProperty !== false) {
@@ -201,10 +203,10 @@ const employeeMetrics = computed(() => {
               metric.additionalText = `Ср. чек: ${formatValue(averageCheck, "currency")}`;
             }
           }
-
-          metrics.push(metric);
         }
       }
+
+      metrics.push(metric);
     });
 
   return metrics;

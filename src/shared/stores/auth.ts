@@ -15,7 +15,7 @@ const TEST_USERS: User[] = [
     email: "manager@dpogti.ru",
     name: "Менеджер Отдела",
     department: "Sales Department",
-    departmentIds: [1],
+    departmentIds: true,
     canPlan: false,
   },
 ];
