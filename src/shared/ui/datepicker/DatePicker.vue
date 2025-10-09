@@ -511,11 +511,6 @@ const getDateRange = () => {
     dateTo = new Date();
   }
 
-  console.log({
-    dateFrom: formatDateToYYYYMMDD(dateFrom), // YYYY-MM-DD format
-    dateTo: formatDateToYYYYMMDD(dateTo),
-  })
-
   return {
     dateFrom: formatDateToYYYYMMDD(dateFrom), // YYYY-MM-DD format
     dateTo: formatDateToYYYYMMDD(dateTo),
