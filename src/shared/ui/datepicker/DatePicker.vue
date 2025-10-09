@@ -469,6 +469,13 @@ const isDateDisabled = (date: { day: number; month: number; year: number }) => {
   return dateObj > today;
 };
 
+const formatDateToYYYYMMDD = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const getDateRange = () => {
   let dateFrom: Date;
   let dateTo: Date;
@@ -478,10 +485,10 @@ const getDateRange = () => {
     dateFrom = new Date(selectedYear.value, 0, 1); // January 1st
     dateTo = new Date(selectedYear.value, 11, 31); // December 31st
   } else if (selectedPeriod.value === "month") {
-    // Month: first day to last day of the month
+    // Month: first day to last day of the selected month
     const month = selectedMonth.value - 1; // Convert from 1-based to 0-based
-    dateFrom = new Date(selectedYear.value, month, 1);
-    dateTo = new Date(selectedYear.value, month + 1, 0); // Last day of the month
+    dateFrom = new Date(selectedYear.value, month, 1); // First day of selected month
+    dateTo = new Date(selectedYear.value, month + 1, 0); // Last day of selected month
   } else if (selectedPeriod.value === "quarter") {
     // Quarter: first day to last day of the quarter
     const quarter = selectedQuarter.value;
@@ -504,9 +511,14 @@ const getDateRange = () => {
     dateTo = new Date();
   }
 
+  console.log({
+    dateFrom: formatDateToYYYYMMDD(dateFrom), // YYYY-MM-DD format
+    dateTo: formatDateToYYYYMMDD(dateTo),
+  })
+
   return {
-    dateFrom: dateFrom.toISOString().split("T")[0], // YYYY-MM-DD format
-    dateTo: dateTo.toISOString().split("T")[0],
+    dateFrom: formatDateToYYYYMMDD(dateFrom), // YYYY-MM-DD format
+    dateTo: formatDateToYYYYMMDD(dateTo),
   };
 };
 
