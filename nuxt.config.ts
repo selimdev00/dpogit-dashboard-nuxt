@@ -25,7 +25,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiHost: process.env.API_HOST,
+      apiHost: process.env.API_HOST || 'https://dpogti-api.marsakod.app',
     },
   },
 
