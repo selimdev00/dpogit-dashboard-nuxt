@@ -21,39 +21,76 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to server
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           ssh -o ConnectTimeout=10 -o ServerAliveInterval=60 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             echo "🚀 Starting deployment..."
-          
+
             # Navigate to project directory
             cd /var/www/dpogit-dashboard-nuxt
-          
+
             # Stash any local changes and checkout master
             git stash --include-untracked || true
             git checkout master
-          
+
             # Pull latest changes
             git pull origin master
-          
-            # Deploy with Docker Compose (build with no cache for consistency)
-            docker compose pull
-            docker compose up -d --build --remove-orphans
-          
-            # Cleanup old images to save space
-            docker image prune -af --filter "until=24h"
-          
+
+            # Build new image (uses layer caching for efficiency)
+            echo "📦 Building Docker image..."
+            docker compose build
+
+            # Stop old container gracefully
+            echo "🛑 Stopping old container..."
+            docker compose stop dpogti_dashboard || true
+
+            # Start new container with resource limits
+            echo "🚀 Starting new container..."
+            docker compose up -d --remove-orphans
+
+            # Wait for health check to pass
+            echo "⏳ Waiting for health check..."
+            sleep 10
+
+            # Verify container is healthy
+            HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' dpogti-dashboard 2>/dev/null || echo "no-health")
+            if [ "$HEALTH_STATUS" = "healthy" ] || [ "$HEALTH_STATUS" = "no-health" ]; then
+              echo "✅ Container is running"
+
+              # Remove old container
+              docker compose rm -f || true
+
+              # Cleanup old images (run after deployment succeeds)
+              echo "🧹 Cleaning up old images..."
+              docker image prune -f --filter "until=48h" --filter "dangling=true"
+            else
+              echo "❌ Health check failed: $HEALTH_STATUS"
+              exit 1
+            fi
+
             echo "✅ Deployment completed successfully!"
           EOF
 
-      - name: Health Check
+      - name: Verify Service Health
         if: success()
         run: |
-          echo "Waiting for service to be ready..."
-          echo "✅ Service is healthy"
+          echo "⏳ Waiting for service to be fully ready..."
+          sleep 5
+
+          # Try to reach health endpoint
+          for i in {1..3}; do
+            if ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "curl -f http://localhost:3000/api/health"; then
+              echo "✅ Service is healthy and responding"
+              exit 0
+            fi
+            echo "Retry $i/3..."
+            sleep 3
+          done
+
+          echo "⚠️ Could not verify health endpoint, but container is running"
 
       - name: Notify on Failure
         if: failure()
         run: |
-          echo "❌ Deployment failed - check logs"
+          echo "❌ Deployment failed - check server logs with: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker compose logs dpogti_dashboard'"

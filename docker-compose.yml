@@ -1,7 +1,52 @@
+version: '3.8'
+
 services:
   dpogti_dashboard:
     build:
       context: .
       dockerfile: ./src/app/docker/Dockerfile
+    container_name: dpogti-dashboard
+    restart: unless-stopped
+
+    # Resource limits for 2GB RAM server
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 768M
+        reservations:
+          cpus: '0.3'
+          memory: 384M
+
+    # Logging configuration to prevent disk space issues
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Environment variables
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+
+    # Port mapping
     ports:
       - "3000:3000"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  default:
+    driver: bridge

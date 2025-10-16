@@ -2,7 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV !== "production" },
   srcDir: "./src",
   css: ["@/app/styles/global.css"],
 
@@ -31,6 +31,28 @@ export default defineNuxtConfig({
 
   shadcn: {
     componentDir: "./shared/ui",
+  },
+
+  // Production optimizations
+  nitro: {
+    compressPublicAssets: true,
+    minify: true,
+
+    // Reduce memory usage
+    experimental: {
+      wasm: false,
+    },
+  },
+
+  // Disable source maps in production
+  sourcemap: {
+    server: false,
+    client: false,
+  },
+
+  // Optimize rendering
+  experimental: {
+    payloadExtraction: false,
   },
 
   app: {
